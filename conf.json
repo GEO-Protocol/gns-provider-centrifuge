@@ -1,0 +1,11 @@
+{
+  "asserts": true,
+  "debug": true,
+  "host": "127.0.0.1",
+  "port": 9000,
+  "redis": {
+    "host": "127.0.0.1",
+    "port": 6379,
+    "db": 0
+  }
+}

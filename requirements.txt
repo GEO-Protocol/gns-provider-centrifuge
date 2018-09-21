@@ -1,0 +1,4 @@
+redis
+pycrypto
+msgpack
+netstruct

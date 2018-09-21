@@ -1,0 +1,4 @@
+
+
+class TooLongMessageError(Exception):
+    pass
