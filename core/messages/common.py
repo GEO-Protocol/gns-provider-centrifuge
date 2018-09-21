@@ -111,3 +111,8 @@ class ConnectionRequest(Response):
         endpoint = Endpoint.deserialize(data[:6])
         initiator_name = netstruct.unpack('H$', data[6:])
         return ConnectionRequest(initiator_name, endpoint)
+
+
+class PingResponse(Response):
+    def __init__(self):
+        super().__init__(self.Types.ping)

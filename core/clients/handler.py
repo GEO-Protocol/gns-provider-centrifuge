@@ -53,7 +53,7 @@ class ClientsHandler:
             assert client_id >= 0
             assert client_id <= 2**32
 
-        raw = self._redis().get(client_id)
+        raw = self._redis().get(f'#{client_id}')
         if raw is None:
             return None
 
@@ -74,6 +74,15 @@ class ClientsHandler:
             return None
 
         return self.get_by_id(int(client_id))
+
+    def get_all_clients_ids(self):
+        """
+        :returns: list of ids of all clients, that are present in redis.
+        """
+
+        ids = self._redis().keys('#*')
+        ids = [int(id.decode('utf-8').split('#')[1]) for id in ids]
+        return ids
 
     def get_ipv4_addresses(self, client_id: int) -> []:
         """
@@ -116,7 +125,7 @@ class ClientsHandler:
         if ASSERTS:
             assert '!' not in client.name
 
-        pipe.setex(client.id, client.serialize(), self.default_address_ttl)
+        pipe.setex(f'#{client.id}', client.serialize(), self.default_address_ttl)
         pipe.setex(f'!{client.name}', client.id, self.default_address_ttl)
 
     def _set_address(self, client: Client, ipv4_address: str, port:int, pipe: Pipeline) -> None:

@@ -1,5 +1,6 @@
 import logging
 
+from core.centrifuge.centrifuge import Centrifuge
 from core.clients.handler import ClientsHandler
 from core.communicator.communicator import Communicator
 from core.flow.processor import RequestsFlow
@@ -14,8 +15,14 @@ class Core:
         self.__init_clients_handler()
         self.__init_messages_processor()
 
+        if self._settings.use_centrifuge:
+            self.__init_centrifuge()
+
     def run(self):
         logging.info("Operations processing started")
+
+        if self._settings.use_centrifuge:
+            self._centrifuge.run_async()
 
         while True:
             self.__process_received_requests()
@@ -49,6 +56,9 @@ class Core:
 
     def __init_messages_processor(self) -> None:
         self._requests_flow = RequestsFlow(self._clients_handler)
+
+    def __init_centrifuge(self) -> None:
+        self._centrifuge = Centrifuge(self._settings)
 
     def __process_received_requests(self) -> None:
         """

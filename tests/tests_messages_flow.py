@@ -3,14 +3,13 @@ import socket
 import struct
 import unittest
 from multiprocessing import Process
-from subprocess import call
 from time import sleep
 
 from Crypto import Random
 
-from core.crypto.cipher import AESCipher
 from core.clients.clients import Client
 from core.core import Core
+from core.crypto.cipher import AESCipher
 from core.messages.base import Request, Message
 from core.messages.common import SetAddressRequest, ParticipantLookupRequest
 from core.settings import Settings
@@ -33,10 +32,20 @@ class TestsMessagesFlow(unittest.TestCase):
 
     def setUp(self):
         self.settings = Settings.load_config('../conf.json')
+
+        # Centrifuge uses it's own internal process.
+        # During running the tests this process prevents correct server shutdown and socket does not returns port.
+        # To prevent it - centrifuge should be simply disabled.
+        # (it is not used in this tests)
+        self.settings.use_centrifuge = False
+
         self.core = Core(self.settings)
 
         def run():
+            # It is necessary to seed random in forked process,
+            # otherwise - Crypto would throw an error.
             Random.atfork()
+
             self.core.run()
 
         self.process = Process(target=run)
@@ -68,8 +77,8 @@ class TestsMessagesFlow(unittest.TestCase):
         self.assertIsNone(self.__read_response())
 
     def test_participant_lookup(self):
-        c1 = self.__generate_client()
-        c2 = self.__generate_client('test_lookup')
+        c1 = self.__generate_client(id=1)
+        c2 = self.__generate_client(id=2, name='test_lookup')
         self.__send_request(
             ParticipantLookupRequest(c1.id, '127.0.0.1', self.port, c2.name))
 
@@ -79,16 +88,24 @@ class TestsMessagesFlow(unittest.TestCase):
     def test_participant_lookup_very_long_name(self):
         # todo: add constraint to the specs, that participant name can't be greater than 214 symbols.
 
-        c1 = self.__generate_client()
-        c2 = self.__generate_client('t'*214)
+        c1 = self.__generate_client(id=1)
+        c2 = self.__generate_client(id=2, name='t'*214)
         self.__send_request(
             ParticipantLookupRequest(c1.id, '127.0.0.1', self.port, c2.name))
 
         self.assertEqual(self.__read_response(), Message.Types.participant_lookup_ack)
         self.assertEqual(self.__read_response(), Message.Types.connection_request)
 
-    def __generate_client(self, name='test'):
-        client = Client(1, name, self.secret)
+    def test_get_all_clients(self):
+        self.__generate_client(id=1, name='c1')
+        self.__generate_client(id=2, name='c2')
+        self.__generate_client(id=3, name='c3')
+
+        clients_ids = self.core._clients_handler.get_all_clients_ids()
+        self.assertEqual(len(clients_ids), 3)
+
+    def __generate_client(self, id=1, name='test'):
+        client = Client(id, name, self.secret)
         self.core._clients_handler.set_ipv4_address(client, '127.0.0.1', self.port)
         return client
 

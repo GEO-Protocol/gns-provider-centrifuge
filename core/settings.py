@@ -25,6 +25,7 @@ class Settings:
         self.debug = params_json['debug']
         self.asserts = params_json['asserts']
         self.redis = RedisSettings(**params_json['redis'])
+        self.use_centrifuge = params_json['use_centrifuge']
 
         if ASSERTS:
             assert type(self.host) is str
@@ -33,6 +34,7 @@ class Settings:
             assert self.port != 0
             assert type(self.debug) is bool
             assert type(self.asserts) is bool
+            assert type(self.use_centrifuge) is bool
 
     @staticmethod
     def load_config(conf_file_path='conf.json'):
