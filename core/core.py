@@ -1,10 +1,10 @@
 import logging
 
-from core.settings import Settings
-from core.thread.ping import Ping
-from core.thread.lookup import Lookup
-from core.service.json_client import JsonClientManager as ClientManager
-from core.model.context import Context
+from .settings import Settings
+from .thread.ping import Ping
+from .thread.lookup import Lookup
+from .service.json_client import JsonClientManager as ClientManager
+from .model.context import Context
 
 
 class Core:

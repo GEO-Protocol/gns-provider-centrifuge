@@ -1,20 +1,15 @@
-import multiprocessing
 import socket
 import netstruct
 
-from core.model.context import Context
+from ..model.context import Context
+from .base import Base
 
 
-class Ping:
+class Ping(Base):
     def __init__(self, context: Context):
-        self.context = context
+        super().__init__(context)
         self.host = context.settings.ping_host
         self.port = context.settings.ping_port
-        self.process = None
-
-    def run_async(self):
-        self.process = multiprocessing.Process(target=self._run)
-        self.process.start()
 
     def _run(self):
         # It is necessary to init socket in the same process, that would use it,
@@ -27,17 +22,12 @@ class Ping:
         self.socket.bind((self.host, self.port))
         while True:
             # Waiting for new data
-            (data, address) = self.socket.recvfrom(128 * 1024)
-            data = data[7:]
-
-            # print("data="+self.bytes_to_str(data))
+            (data, address) = self.socket.recvfrom(512)
+            data = data[self.header_size:]
 
             # Reading client id and timestamp
             s = netstruct.NetStruct(b"<B I Q")
             (protocol_version, id, time_updated) = s.unpack(data)
-
-            self.context.logger.info(
-               "Ping received0:" + " protocol_version=" + str(protocol_version) + " id=" + str(id) + " address=" + str(address) + " time_updated=" + str(time_updated))
 
             # Retrieving client from db and updating its address and timestamp
             client = self.context.client_manager.find_by_id(id)
@@ -48,15 +38,8 @@ class Ping:
                     client.address = address
                     client.time_updated = time_updated
                     self.context.client_manager.save(client)
-                    self.socket.sendto("OK".encode('ascii'), address)
+                    self.send_message("OK".encode('ascii'), address)
                 else:
-                    self.socket.sendto("TOO FAST".encode('ascii'), address)
+                    self.send_message("TOO FAST".encode('ascii'), address)
             else:
-                self.socket.sendto("NOT FOUND".encode('ascii'), address)
-
-    @staticmethod
-    def bytes_to_str(arr):
-        val = ""
-        for byte in arr:
-            val += '{:02x}'.format(byte) + ' '
-        return val
+                self.send_message("NOT FOUND".encode('ascii'), address)

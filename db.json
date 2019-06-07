@@ -1,0 +1,39 @@
+{
+    "clients": {
+        "3": {
+            "address": [
+                "127.0.0.1",
+                2002
+            ],
+            "time_created": 1559833613.0094466,
+            "username": "second",
+            "time_updated": 105555908220163,
+            "id": 3
+        },
+        "2": {
+            "address": [
+                "127.0.0.1",
+                2001
+            ],
+            "time_created": 1559833613.0094466,
+            "username": "first",
+            "time_updated": 105555916133801,
+            "id": 2
+        },
+        "1": {
+            "address": [
+                "127.0.0.1",
+                54189
+            ],
+            "time_created": 1559833613.0094466,
+            "username": "minyor",
+            "time_updated": 1559848700.1121066,
+            "id": 1
+        }
+    },
+    "user_names": {
+        "minyor": 1,
+        "first": 2,
+        "second": 3
+    }
+}

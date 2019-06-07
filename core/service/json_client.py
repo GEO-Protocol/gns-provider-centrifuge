@@ -1,7 +1,7 @@
 import json
 
-from core.service.client import ClientManager
-from core.model.client import Client
+from .client import ClientManager
+from ..model.client import Client
 
 
 class JsonClientManager(ClientManager):
