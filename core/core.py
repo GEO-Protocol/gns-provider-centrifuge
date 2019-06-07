@@ -1,31 +1,32 @@
 import logging
 
-from core.centrifuge.centrifuge import Centrifuge
-from core.clients.handler import ClientsHandler
-from core.communicator.communicator import Communicator
-from core.flow.processor import RequestsFlow
 from core.settings import Settings
+from core.thread.ping import Ping
+from core.thread.lookup import Lookup
+from core.service.json_client import JsonClientManager as ClientManager
+from core.model.context import Context
 
 
 class Core:
     def __init__(self, settings: Settings):
         self._settings = settings
         self.__init_logging()
-        self.__init_communicator()
-        self.__init_clients_handler()
-        self.__init_messages_processor()
 
-        if self._settings.use_centrifuge:
-            self.__init_centrifuge()
+        self.client_manager = ClientManager("db.json")
+        self.context = Context(
+            self._settings,
+            self.client_manager,
+            self.logger
+        )
+
+        self.ping_controller = Ping(self.context)
+        self.lookup_controller = Lookup(self.context)
 
     def run(self):
         logging.info("Operations processing started")
 
-        if self._settings.use_centrifuge:
-            self._centrifuge.run_async()
-
-        while True:
-            self.__process_received_requests()
+        self.ping_controller.run_async()
+        self.lookup_controller.run_async()
 
     def __init_logging(self) -> None:
         stream_handler = logging.StreamHandler()
@@ -47,26 +48,3 @@ class Core:
             self.logger.setLevel(logging.DEBUG)
         else:
             self.logger.setLevel(logging.INFO)
-
-    def __init_communicator(self) -> None:
-        self._communicator = Communicator(self._settings)
-
-    def __init_clients_handler(self) -> None:
-        self._clients_handler = ClientsHandler(self._settings)
-
-    def __init_messages_processor(self) -> None:
-        self._requests_flow = RequestsFlow(self._clients_handler)
-
-    def __init_centrifuge(self) -> None:
-        self._centrifuge = Centrifuge(self._settings)
-
-    def __process_received_requests(self) -> None:
-        """
-        Processes requests from clients and sends responses to them (if present).
-        """
-
-        for request in self._communicator.get_received_requests():
-            for processing_response in self._requests_flow.process(request):
-                self._communicator.send(
-                    processing_response.encrypted_response,
-                    processing_response.endpoint)

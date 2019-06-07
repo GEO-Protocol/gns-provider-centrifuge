@@ -1,4 +1,0 @@
-
-
-class TooLongMessageError(Exception):
-    pass

@@ -2,7 +2,10 @@
   "asserts": true,
   "debug": true,
   "host": "127.0.0.1",
-  "port": 9000,
+  "port": 2011,
+  "ping_host": "127.0.0.1",
+  "ping_port": 2010,
+  "provider_name": "geo.pay",
   "redis": {
     "host": "127.0.0.1",
     "port": 6379,
