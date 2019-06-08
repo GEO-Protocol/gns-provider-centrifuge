@@ -38,9 +38,6 @@ class Lookup(Base):
                 self.send_message("WRONG FORMAT".encode('ascii'), address)
                 continue
 
-            self.context.logger.info(
-                "Lookup received:" + " username='" + username + "'" + " provider='" + provider + "'")
-
             # Check if provider name matches our provider's name
             if provider != self.context.settings.provider_name:
                 self.send_message("UNKNOWN PROVIDER".encode('ascii'), address)
@@ -48,6 +45,10 @@ class Lookup(Base):
 
             client = self.context.client_manager.find_by_username(username)
             if client:
+                if not client.address:
+                    self.send_message("NO ADDRESS YET".encode('ascii'), address)
+                    continue
+
                 self.context.logger.info(
                     "Lookup received:" + " username='" + username + "'" + " provider='" + provider + "'")
 
