@@ -1,6 +1,6 @@
 
 
-class ClientManager:
+class Manager:
     def find_by_id(self, id):
         raise NotImplementedError
 
@@ -10,8 +10,8 @@ class ClientManager:
     def create(self, id, name):
         raise NotImplementedError
 
-    def save(self, client):
+    def save(self, client, redis_only=False):
         raise NotImplementedError
 
-    def delete(self, client):
+    def delete(self, client, redis_only=False):
         raise NotImplementedError

@@ -17,7 +17,7 @@ class Ping(Base):
         self.socket = socket.socket(
             socket.AF_INET,  # Internet
             socket.SOCK_DGRAM)  # UDP
-        #self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
         self.socket.bind((self.host, self.port))
         while True:
@@ -37,7 +37,7 @@ class Ping(Base):
                         "Ping received:"+" id="+str(id)+" address="+str(address)+" time_updated="+str(time_updated))
                     client.address = address
                     client.time_updated = time_updated
-                    self.context.client_manager.save(client)
+                    self.context.client_manager.save(client, True)
                     self.send_message("OK".encode('ascii'), address)
                 else:
                     self.send_message("TOO FAST".encode('ascii'), address)
