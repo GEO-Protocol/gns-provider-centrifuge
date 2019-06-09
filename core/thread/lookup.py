@@ -25,15 +25,15 @@ class Lookup(Base):
             # Waiting for new data
             (data, address) = self.socket.recvfrom(512)
             data = data[self.header_size:]
-            # print("data=" + self.bytes_to_str(data))
+            # self.context.logger.info("Lookup data=" + self.bytes_to_str(data))
 
             # Reading username and provider name
             s = netstruct.NetStruct(b"<B H")
             (protocol_version, username_len,) = s.unpack(data)
-            print("protocol_version=" + str(protocol_version) + " username_len=" + str(username_len))
-            username = data[3:3+username_len].decode('ascii')
+            self.context.logger.info("protocol_version=" + str(protocol_version) + " username_len=" + str(username_len))
+            useraddress = data[3:3+username_len].decode('ascii')
             try:
-                (username, provider) = username.split('@')
+                (username, provider) = useraddress.split('@')
             except:
                 self.send_message("WRONG FORMAT".encode('ascii'), address)
                 continue
@@ -62,10 +62,11 @@ class Lookup(Base):
                 ret_data = s.pack(*values)
 
                 # Packing request string (username@provider_name)
-                ret_data += data
+                ret_data += struct.pack("<H", len(useraddress))
+                ret_data += useraddress.encode('ascii')
 
                 # Packing client address: IP and PORT
-                client_address = client.address[0] + str(client.address[1])
+                client_address = client.address[0] + ":" + str(client.address[1])
                 ret_data += struct.pack("<B", len(client_address))
                 ret_data += client_address.encode('ascii')
 

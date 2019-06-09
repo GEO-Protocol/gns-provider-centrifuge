@@ -40,6 +40,8 @@ class Ping(Base):
                     self.context.client_manager.save(client)
                     self.send_message("OK".encode('ascii'), address)
                 else:
+                    self.context.logger.info("TOO FAST")
                     self.send_message("TOO FAST".encode('ascii'), address)
             else:
+                self.context.logger.info("NOT FOUND")
                 self.send_message("NOT FOUND".encode('ascii'), address)
