@@ -1,10 +1,10 @@
 import logging
 
-from .settings import Settings
-from .thread.ping import Ping
-from .thread.lookup import Lookup
-from .service.json_client import JsonClientManager as ClientManager
-from .model.context import Context
+from core.service.client.json import Manager as ClientManager
+from core.model.context import Context
+from core.settings import Settings
+from core.thread.lookup import Lookup
+from core.thread.ping import Ping
 
 
 class Core:
@@ -12,7 +12,7 @@ class Core:
         self._settings = settings
         self.__init_logging()
 
-        self.client_manager = ClientManager("db.json")
+        self.client_manager = ClientManager("db.json", self._settings)
         self.context = Context(
             self._settings,
             self.client_manager,

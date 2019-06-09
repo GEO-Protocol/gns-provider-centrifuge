@@ -1,4 +1,3 @@
 redis
 pycrypto
-msgpack
 netstruct

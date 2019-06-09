@@ -12,10 +12,10 @@ from core.settings import Settings
 
 def usage():
     print("Usage:")
-    print("\tpython client.py [-v] [-p ping id] [-l lookup username]")
+    print("\tpython interface.py [-v] [-p ping id] [-l lookup username]")
     print("Example:")
-    print("\tpython client.py -p 3")
-    print("\tpython client.py -l 'minyor'")
+    print("\tpython interface.py -p 3")
+    print("\tpython interface.py -l 'minyor'")
 
 
 if __name__ == '__main__':
