@@ -41,14 +41,12 @@ class Ping(Base):
             # Retrieving client from db and updating its address and timestamp
             client = self.context.client_manager.find_by_id(id)
             if client:
-                print("PING 1: username=" + client.username + " address=" + str(client.address))
                 if not client.time_updated or int(client.time_updated) < int(time_updated):
                     self.context.logger.info(
                         "Ping received:"+" id="+str(id)+" address="+str(address)+" time_updated="+str(time_updated))
                     client.address = address
                     client.time_updated = time_updated
                     self.context.client_manager.save(client, True)
-                    print("PING 2: username=" + client.username + " address=" + str(client.address))
                     self.send_error("OK".encode('ascii'), address)
                 else:
                     self.context.logger.info("TOO FAST")

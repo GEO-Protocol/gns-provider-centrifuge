@@ -22,6 +22,10 @@ class Core:
         self.ping_controller = Ping(self.context)
         self.lookup_controller = Lookup(self.context)
 
+        # self.pool = multiprocessing.Pool()
+        # self.ctx = multiprocessing.get_context("spawn")  # Use process spawning instead of fork
+        # self.pool = self.ctx.Pool()
+
     def run(self):
         logging.info("Operations processing started")
 

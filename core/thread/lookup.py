@@ -54,7 +54,6 @@ class Lookup(Base):
 
             client = self.context.client_manager.find_by_username(username)
             if client:
-                print("LOOKUP: username=" + client.username + " address=" + str(client.address))
                 if not client.address:
                     self.send_error("NO ADDRESS YET".encode('ascii'), address)
                     continue
