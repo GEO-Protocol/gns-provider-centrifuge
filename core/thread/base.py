@@ -6,6 +6,7 @@ from ..model.context import Context
 
 
 class Base:
+    protocol_version = 0
     header_size = 10
     checksum_size = 4
 

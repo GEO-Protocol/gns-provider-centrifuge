@@ -1,6 +1,7 @@
 import socket
 import struct
 import netstruct
+import time
 
 from ..model.context import Context
 from .base import Base
@@ -29,12 +30,16 @@ class Lookup(Base):
             # Waiting for new data
             (data, address) = self.socket.recvfrom(512)
             data = data[self.header_size:]
-            # self.context.logger.info("Lookup data=" + self.bytes_to_str(data))
 
             # Reading username and provider name
             s = netstruct.NetStruct(b"<B H")
             (protocol_version, username_len,) = s.unpack(data)
-            self.context.logger.info("protocol_version=" + str(protocol_version) + " username_len=" + str(username_len))
+
+            if protocol_version != self.protocol_version:
+                self.context.logger.info("PROTOCOL VERSION ERROR: "+protocol_version)
+                self.send_error(("PROTOCOL VERSION ERROR: "+protocol_version).encode('ascii'), address)
+                continue
+
             useraddress = data[3:3+username_len].decode('ascii')
             try:
                 (username, provider) = useraddress.split('@')
@@ -49,6 +54,7 @@ class Lookup(Base):
 
             client = self.context.client_manager.find_by_username(username)
             if client:
+                print("LOOKUP: username=" + client.username + " address=" + str(client.address))
                 if not client.address:
                     self.send_error("NO ADDRESS YET".encode('ascii'), address)
                     continue
