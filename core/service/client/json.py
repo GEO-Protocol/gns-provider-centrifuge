@@ -13,6 +13,7 @@ class Manager(interface.Manager):
         self.clients_by_id = {}
         self.clients_by_username = {}
 
+        self._load_json()
         #client = self.create(1, "minyor")
         #self.save(client)
 
@@ -95,13 +96,7 @@ class Manager(interface.Manager):
             handle = json.load(file)
             return handle
         except:
-            data = {
-                "clients": {},
-                "user_names": {}
-            }
-            self._save_json(data)
-            print("Initialised Json DB.")
-            return data
+            assert False, "Error: Cannot load Json DB."
 
     def _save_json(self, handle):
         with open(self.path, 'w') as cpm_file_out:

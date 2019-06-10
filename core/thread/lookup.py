@@ -12,6 +12,10 @@ class Lookup(Base):
         self.host = context.settings.host
         self.port = context.settings.port
 
+    def send_error(self, data, address):
+        # self.send_message(data, address)
+        pass
+
     def _run(self):
         # It is necessary to init socket in the same process, that would use it,
         # to prevent data races.
@@ -35,18 +39,18 @@ class Lookup(Base):
             try:
                 (username, provider) = useraddress.split('@')
             except:
-                self.send_message("WRONG FORMAT".encode('ascii'), address)
+                self.send_error("WRONG FORMAT".encode('ascii'), address)
                 continue
 
             # Check if provider name matches our provider's name
             if provider != self.context.settings.provider_name:
-                self.send_message("UNKNOWN PROVIDER".encode('ascii'), address)
+                self.send_error("UNKNOWN PROVIDER".encode('ascii'), address)
                 continue
 
             client = self.context.client_manager.find_by_username(username)
             if client:
                 if not client.address:
-                    self.send_message("NO ADDRESS YET".encode('ascii'), address)
+                    self.send_error("NO ADDRESS YET".encode('ascii'), address)
                     continue
 
                 self.context.logger.info(
@@ -74,4 +78,4 @@ class Lookup(Base):
                 # Sending packed data back as a response
                 self.send_message(ret_data, address)
             else:
-                self.send_message("NOT FOUND".encode('ascii'), address)
+                self.send_error("NOT FOUND".encode('ascii'), address)

@@ -11,6 +11,10 @@ class Ping(Base):
         self.host = context.settings.ping_host
         self.port = context.settings.ping_port
 
+    def send_error(self, data, address):
+        # self.send_message(data, address)
+        pass
+
     def _run(self):
         # It is necessary to init socket in the same process, that would use it,
         # to prevent data races.
@@ -38,10 +42,10 @@ class Ping(Base):
                     client.address = address
                     client.time_updated = time_updated
                     self.context.client_manager.save(client, True)
-                    self.send_message("OK".encode('ascii'), address)
+                    self.send_error("OK".encode('ascii'), address)
                 else:
                     self.context.logger.info("TOO FAST")
-                    self.send_message("TOO FAST".encode('ascii'), address)
+                    self.send_error("TOO FAST".encode('ascii'), address)
             else:
                 self.context.logger.info("NOT FOUND")
-                self.send_message("NOT FOUND".encode('ascii'), address)
+                self.send_error("NOT FOUND".encode('ascii'), address)
