@@ -6,6 +6,8 @@ from core.settings import Settings
 
 
 class Manager:
+    expiration_time_in_seconds = 60 * 10
+
     def __init__(self, settings: Settings):
         self._redis_pool = redis.ConnectionPool(
             host=settings.redis.host,
@@ -28,7 +30,7 @@ class Manager:
     def save(self, client):
         dump = json.dumps([client.address, client.time_updated])
         pipe = self._redis().pipeline()
-        pipe.set("client_"+str(client.id), dump)
+        pipe.set("client_"+str(client.id), dump, ex=self.expiration_time_in_seconds)
         pipe.execute()
 
     def delete(self, client):

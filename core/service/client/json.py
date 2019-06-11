@@ -30,7 +30,6 @@ class Manager(interface.Manager):
         client = self._load_client(json_obj)
         self.clients_by_id[id] = client
         self.clients_by_username[client.username] = client
-        self.delete(client, True)
         return self.redis.load(client)
 
     def find_by_username(self, username):
