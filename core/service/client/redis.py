@@ -1,14 +1,16 @@
 import json
 import redis
+import time
 
 from core.model.client import Client
 from core.settings import Settings
 
 
 class Manager:
-    expiration_time_in_seconds = 60 * 10
+    expiration_time_in_seconds = 60 * 30  # 30 minutes
 
     def __init__(self, settings: Settings):
+        self._settings = settings
         self._redis_pool = redis.ConnectionPool(
             host=settings.redis.host,
             port=settings.redis.port,
@@ -18,20 +20,27 @@ class Manager:
         return redis.Redis(connection_pool=self._redis_pool)
 
     def load(self, client):
-        dump = self._redis().get("client_"+str(client.id))
+        dump = self._redis().get(self.key_name(client))
         if not dump:
             self.save(client)
             return client
-        json_obj = json.loads(dump.decode("utf-8"))
-        client.address = json_obj[0]
-        client.time_updated = json_obj[1]
+        client.address = json.loads(dump.decode("utf-8"))
         return client
 
     def save(self, client):
-        dump = json.dumps([client.address, client.time_updated])
-        pipe = self._redis().pipeline()
-        pipe.set("client_"+str(client.id), dump, ex=self.expiration_time_in_seconds)
-        pipe.execute()
+        # timestamp = int(round(time.time() * 1000))
+        # print("timestamp1="+str(client.time_updated))
+        # print("timestamp2="+str(timestamp))
+
+        dump = json.dumps(client.address)
+
+        # pipe = self._redis().pipeline()
+        # pipe.execute()
+
+        self._redis().set(self.key_name(client), dump, ex=self.expiration_time_in_seconds)
+
+    def key_name(self, client):
+        return self._settings.provider_name + "_" + str(client.id)
 
     def delete(self, client):
-        self._redis().delete("client_"+str(client.id))
+        self._redis().delete(self.key_name(client))

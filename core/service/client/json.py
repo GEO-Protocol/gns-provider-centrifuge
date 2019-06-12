@@ -14,8 +14,8 @@ class Manager(interface.Manager):
         self.clients_by_username = {}
 
         self._load_json()
-        #client = self.create(1, "minyor")
-        #self.save(client)
+        # client = self.create(1, "minyor")
+        # self.save(client)
 
     def find_by_id(self, id):
         id = str(id)
