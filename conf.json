@@ -5,7 +5,10 @@
   "port": 2011,
   "ping_host": "127.0.0.1",
   "ping_port": 2010,
+  "api_host": "0.0.0.0",
+  "api_port": 2012,
   "provider_name": "geo.pay",
+  "database_name": "db",
   "redis": {
     "host": "127.0.0.1",
     "port": 6379,

@@ -1,10 +1,12 @@
 import logging
+import subprocess
 
-from core.service.client.json import Manager as ClientManager
 from core.model.context import Context
-from core.settings import Settings
+from core.service.client.json import Manager as ClientManager
 from core.thread.lookup import Lookup
 from core.thread.ping import Ping
+
+from core.settings import Settings
 
 
 class Core:
@@ -12,7 +14,7 @@ class Core:
         self._settings = settings
         self.__init_logging()
 
-        self.client_manager = ClientManager("db.json", self._settings)
+        self.client_manager = ClientManager(self._settings)
         self.context = Context(
             self._settings,
             self.client_manager,
@@ -27,10 +29,19 @@ class Core:
         # self.pool = self.ctx.Pool()
 
     def run(self):
+        # print("django version: "+django.get_version())
         logging.info("Operations processing started")
+        print()
 
         self.ping_controller.run_async()
         self.lookup_controller.run_async()
+
+        django_process = subprocess.Popen([
+            "python", "-u",
+            "manage.py",
+            "runserver",
+            str(self._settings.api_host) + ":" + str(self._settings.api_port)
+        ], bufsize=0, )
 
     def __init_logging(self) -> None:
         stream_handler = logging.StreamHandler()

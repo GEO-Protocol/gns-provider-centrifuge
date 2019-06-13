@@ -1,12 +1,11 @@
-import sys
-import socket
-import time
-import struct
-import netstruct
-import binascii
 import getopt
+import socket
+import struct
+import sys
+import time
 
-from core.core import Core
+import netstruct
+
 from core.settings import Settings
 
 

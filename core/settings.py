@@ -24,7 +24,10 @@ class Settings:
         self.port = params_json['port']
         self.ping_host = params_json['ping_host']
         self.ping_port = params_json['ping_port']
+        self.api_host = params_json['api_host']
+        self.api_port = params_json['api_port']
         self.provider_name = params_json['provider_name']
+        self.database_name = params_json['database_name']
         self.debug = params_json['debug']
         self.asserts = params_json['asserts']
         self.redis = RedisSettings(**params_json['redis'])
@@ -35,12 +38,23 @@ class Settings:
             assert len(self.host) != 0
             assert type(self.port) is int
             assert self.port != 0
+
             assert type(self.ping_host) is str
             assert len(self.ping_host) != 0
             assert type(self.ping_port) is int
             assert self.ping_port != 0
+
+            assert type(self.api_host) is str
+            assert len(self.api_host) != 0
+            assert type(self.api_port) is int
+            assert self.api_port != 0
+
             assert type(self.provider_name) is str
             assert len(self.provider_name) != 0
+
+            assert type(self.database_name) is str
+            assert len(self.database_name) != 0
+
             assert type(self.debug) is bool
             assert type(self.asserts) is bool
             assert type(self.use_centrifuge) is bool

@@ -1,8 +1,6 @@
 import json
 import redis
-import time
 
-from core.model.client import Client
 from core.settings import Settings
 
 

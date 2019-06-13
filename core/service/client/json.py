@@ -7,9 +7,9 @@ from core.settings import Settings
 
 
 class Manager(interface.Manager):
-    def __init__(self, path, settings: Settings):
+    def __init__(self, settings: Settings):
         self.redis = redis.Manager(settings)
-        self.path = path
+        self.path = settings.database_name + ".json"
         self.clients_by_id = {}
         self.clients_by_username = {}
 

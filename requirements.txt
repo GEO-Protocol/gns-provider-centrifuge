@@ -1,3 +1,4 @@
 redis
 pycrypto
 netstruct
+django>=2.2.2
