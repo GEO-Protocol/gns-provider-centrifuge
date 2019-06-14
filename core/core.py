@@ -1,3 +1,4 @@
+import os,sys
 import logging
 import subprocess
 
@@ -23,25 +24,31 @@ class Core:
 
         self.ping_controller = Ping(self.context)
         self.lookup_controller = Lookup(self.context)
+        self.django_process = None
 
         # self.pool = multiprocessing.Pool()
         # self.ctx = multiprocessing.get_context("spawn")  # Use process spawning instead of fork
         # self.pool = self.ctx.Pool()
 
-    def run(self):
+    def run(self, run_threads=True):
         # print("django version: "+django.get_version())
         logging.info("Operations processing started")
         print()
 
-        self.ping_controller.run_async()
-        self.lookup_controller.run_async()
+        if run_threads:
+            self.ping_controller.run_async()
+            self.lookup_controller.run_async()
 
-        django_process = subprocess.Popen([
+        root_path = os.path.dirname(os.path.dirname(os.path.abspath(sys.modules[Settings.__module__].__file__)))
+        self.django_process = subprocess.Popen([
             "python", "-u",
             "manage.py",
             "runserver",
             str(self._settings.api_host) + ":" + str(self._settings.api_port)
-        ], bufsize=0, )
+        ], bufsize=0, cwd=root_path)
+
+    def terminate(self):
+        self.django_process.terminate()
 
     def __init_logging(self) -> None:
         stream_handler = logging.StreamHandler()

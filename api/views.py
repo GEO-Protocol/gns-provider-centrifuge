@@ -1,5 +1,8 @@
+import json
+
 from django.http import HttpResponse
 from django.http import JsonResponse
+from django.http import QueryDict
 from django.views.decorators.csrf import csrf_exempt
 
 from core.service.client.json import Manager as ClientManager
@@ -94,13 +97,14 @@ def user_register(request):
 
 @csrf_exempt
 def user_update_crypto_key(request, client_id):
-    if request.method != 'POST':
+    if request.method != 'PATCH':
         return JsonResponse({
             "status": "error",
-            "msg": "POST method is required"
+            "msg": "PATCH method is required"
         })
 
-    key = request.POST.get("key", None)
+    data = QueryDict(request.body)
+    key = data.get("key", None)
     if not key:
         return JsonResponse({
             "status": "error",

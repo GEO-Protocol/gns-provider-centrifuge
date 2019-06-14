@@ -1,3 +1,4 @@
+import os,sys
 import json
 
 import core.service.client.interface as interface
@@ -8,8 +9,9 @@ from core.settings import Settings
 
 class Manager(interface.Manager):
     def __init__(self, settings: Settings):
+        self.root_path = os.path.dirname(os.path.dirname(os.path.abspath(sys.modules[Settings.__module__].__file__)))
         self.redis = redis.Manager(settings)
-        self.path = settings.database_name + ".json"
+        self.path = os.path.join(self.root_path, settings.database_name + ".json")
         self.clients_by_id = {}
         self.clients_by_username = {}
 
@@ -92,6 +94,7 @@ class Manager(interface.Manager):
         try:
             file = open(self.path)
             handle = json.load(file)
+            file.close()
             return handle
         except:
             assert False, "Error: Cannot load Json DB."
