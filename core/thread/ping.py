@@ -15,7 +15,8 @@ class Ping(Base):
         # self.send_message(data, address)
         pass
 
-    def _run(self):
+    def run(self):
+        self.context.logger.info("PingController started")
         # It is necessary to init socket in the same process, that would use it,
         # to prevent data races.
         self.socket = socket.socket(

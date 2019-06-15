@@ -17,7 +17,7 @@ class Base:
         self.channel_index = 0
 
     def run_async(self):
-        self.process = multiprocessing.Process(target=self._run)
+        self.process = multiprocessing.Process(target=self.run)
         self.process.start()
 
     def _run(self):

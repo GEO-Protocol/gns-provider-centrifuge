@@ -22,8 +22,11 @@ class Core:
             self.logger
         )
 
-        self.ping_controller = Ping(self.context)
-        self.lookup_controller = Lookup(self.context)
+        self.ping_controller = None
+        self.lookup_controller = None
+
+        self.ping_process = None
+        self.lookup_process = None
         self.django_process = None
 
         # self.pool = multiprocessing.Pool()
@@ -31,14 +34,24 @@ class Core:
         # self.pool = self.ctx.Pool()
 
     def run(self, run_threads=True):
-        # print("django version: "+django.get_version())
-        logging.info("Operations processing started")
-        print()
-
         if run_threads:
-            self.ping_controller.run_async()
-            self.lookup_controller.run_async()
+            root_path = os.path.dirname(os.path.dirname(os.path.abspath(sys.modules[Settings.__module__].__file__)))
+            self.ping_process = subprocess.Popen([
+                "python", "-u",
+                "server.py",
+                "-m",
+                "ping"
+            ], bufsize=0, cwd=root_path)
 
+            root_path = os.path.dirname(os.path.dirname(os.path.abspath(sys.modules[Settings.__module__].__file__)))
+            self.lookup_process = subprocess.Popen([
+                "python", "-u",
+                "server.py",
+                "-m",
+                "lookup"
+            ], bufsize=0, cwd=root_path)
+
+        logging.info("WebServer started")
         root_path = os.path.dirname(os.path.dirname(os.path.abspath(sys.modules[Settings.__module__].__file__)))
         self.django_process = subprocess.Popen([
             "python", "-u",
@@ -47,8 +60,29 @@ class Core:
             str(self._settings.api_host) + ":" + str(self._settings.api_port)
         ], bufsize=0, cwd=root_path)
 
+    def run_ping(self):
+        self.ping_controller = Ping(self.context)
+        self.ping_controller.run()
+
+    def run_lookup(self):
+        self.lookup_controller = Lookup(self.context)
+        self.lookup_controller.run()
+
+    def wait(self):
+        if self.ping_process:
+            self.ping_process.wait()
+        if self.lookup_process:
+            self.lookup_process.wait()
+        if self.django_process:
+            self.django_process.wait()
+
     def terminate(self):
-        self.django_process.terminate()
+        if self.ping_process:
+            self.ping_process.terminate()
+        if self.lookup_process:
+            self.lookup_process.terminate()
+        if self.django_process:
+            self.django_process.terminate()
 
     def __init_logging(self) -> None:
         stream_handler = logging.StreamHandler()
