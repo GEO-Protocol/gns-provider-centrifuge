@@ -1,5 +1,6 @@
 import os,sys
 import json
+import time
 
 import core.service.client.interface as interface
 import core.service.client.redis as redis
@@ -88,16 +89,31 @@ class Manager(interface.Manager):
             obj = user_names.get(client.username, None)
             if obj:
                 del user_names[client.username]
+            client = self.clients_by_id.get(id, None)
+            if client:
+                del self.clients_by_id[id]
+                if self.clients_by_username.get(client.username, None):
+                    del self.clients_by_username[client.username]
             self._save_json(handle)
 
     def _load_json(self):
-        try:
-            file = open(self.path)
-            handle = json.load(file)
-            file.close()
-            return handle
-        except:
-            assert False, "Error: Cannot load Json DB."
+        tries_index = 0
+        tries_count = 10
+        while True:
+            file = None
+            try:
+                file = open(self.path)
+                handle = json.load(file)
+                file.close()
+                return handle
+            except:
+                if file:
+                    file.close()
+                tries_index += 1
+                if tries_index < tries_count:
+                    print("Keep trying load DB...")
+                    continue
+                assert False, "Error: Cannot load Json DB."
 
     def _save_json(self, handle):
         with open(self.path, 'w') as cpm_file_out:

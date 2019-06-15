@@ -41,9 +41,9 @@ class Lookup(Base):
                 self.send_error(("PROTOCOL VERSION ERROR: "+protocol_version).encode('ascii'), address)
                 continue
 
-            useraddress = data[3:3+username_len].decode('ascii')
+            user_address = data[3:3+username_len].decode('ascii')
             try:
-                (username, provider) = useraddress.split('@')
+                (username, provider) = user_address.split('@')
             except:
                 self.send_error("WRONG FORMAT".encode('ascii'), address)
                 continue
@@ -73,8 +73,8 @@ class Lookup(Base):
                 ret_data = s.pack(*values)
 
                 # Packing request string (username@provider_name)
-                ret_data += struct.pack("<H", len(useraddress))
-                ret_data += useraddress.encode('ascii')
+                ret_data += struct.pack("<H", len(user_address))
+                ret_data += user_address.encode('ascii')
 
                 # Packing client address: IP and PORT
                 client_address = client.address[0] + ":" + str(client.address[1])

@@ -33,24 +33,28 @@ class Core:
         # self.ctx = multiprocessing.get_context("spawn")  # Use process spawning instead of fork
         # self.pool = self.ctx.Pool()
 
-    def run(self, run_threads=True):
-        if run_threads:
-            root_path = os.path.dirname(os.path.dirname(os.path.abspath(sys.modules[Settings.__module__].__file__)))
-            self.ping_process = subprocess.Popen([
-                "python", "-u",
-                "server.py",
-                "-m",
-                "ping"
-            ], bufsize=0, cwd=root_path)
+    def run(self):
+        self.run_threads()
+        self.run_web_server()
 
-            root_path = os.path.dirname(os.path.dirname(os.path.abspath(sys.modules[Settings.__module__].__file__)))
-            self.lookup_process = subprocess.Popen([
-                "python", "-u",
-                "server.py",
-                "-m",
-                "lookup"
-            ], bufsize=0, cwd=root_path)
+    def run_threads(self):
+        root_path = os.path.dirname(os.path.dirname(os.path.abspath(sys.modules[Settings.__module__].__file__)))
+        self.ping_process = subprocess.Popen([
+            "python", "-u",
+            "server.py",
+            "-m",
+            "ping"
+        ], bufsize=0, cwd=root_path)
 
+        root_path = os.path.dirname(os.path.dirname(os.path.abspath(sys.modules[Settings.__module__].__file__)))
+        self.lookup_process = subprocess.Popen([
+            "python", "-u",
+            "server.py",
+            "-m",
+            "lookup"
+        ], bufsize=0, cwd=root_path)
+
+    def run_web_server(self):
         logging.info("WebServer started")
         root_path = os.path.dirname(os.path.dirname(os.path.abspath(sys.modules[Settings.__module__].__file__)))
         self.django_process = subprocess.Popen([

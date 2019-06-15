@@ -7,6 +7,7 @@ import time
 import netstruct
 
 from core.settings import Settings
+from core.thread.base import Base
 
 
 def usage():
@@ -17,57 +18,53 @@ def usage():
     print("\tpython interface.py -l 'minyor'")
 
 
-if __name__ == '__main__':
-    verbose = False
-    id = None
-    username = None
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "hp:l:v", ["help"])
-    except getopt.GetoptError as err:
-        print(str(err))
-        usage()
-        sys.exit(2)
-    for o, a in opts:
-        if o == "-v":
-            verbose = True
-        elif o in ("-h", "--help"):
-            usage()
-            sys.exit()
-        elif o in ("-p", "--ping"):
-            id = int(a)
-        elif o in ("-l", "--lookup"):
-            username = a
-        else:
-            assert False, "unhandled option"
+class ThreadBase(Base):
+    def _run(self):
+        pass
 
-    settings = Settings.load_config()
 
-    if id:
-        time_updated = time.time()
+def send_ping(settings, id, verbose=True):
+    thread_base = ThreadBase(None)
+
+    time_updated = int(round(time.time() * 1000))
+    if verbose:
         print("id="+str(id)+" time_updated="+str(time_updated))
 
-        values = (id, time_updated)
-        s = struct.Struct(">I d")
-        data = s.pack(*values)
+    values = (ThreadBase.protocol_version, id, time_updated)
+    s = struct.Struct("<B I Q")
+    data = s.pack(*values)
+    data = thread_base.pack_message(data)
 
-        client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        client.sendto(data, (settings.ping_host, settings.ping_port))
+    client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    client.sendto(data, (settings.ping_host, settings.ping_port))
+    client.close()
 
-        (data, address) = client.recvfrom(128 * 1024)
-        print("\treceived message: '" + data.decode('ascii') + "'")
-    elif username:
-        username_len = len(username)
+    # (data, address) = client.recvfrom(512)
+    # print("\treceived message: '" + data.decode('ascii') + "'")
+
+
+def send_lookup(settings, username, verbose=True):
+    thread_base = ThreadBase(None)
+
+    username = username + '@' + settings.provider_name
+    username_len = len(username)
+    if verbose:
         print("username_len="+str(username_len)+" username="+str(username))
 
-        values = (username_len,)
-        s = struct.Struct(">H")
-        data = s.pack(*values) + username.encode('ascii')
+    values = (ThreadBase.protocol_version, username_len)
+    s = struct.Struct("<B H")
+    data = s.pack(*values) + username.encode('ascii')
+    data = thread_base.pack_message(data)
 
-        client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        client.sendto(data, (settings.host, settings.port))
+    client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    client.sendto(data, (settings.host, settings.port))
+    client.close()
 
-        (data, address) = client.recvfrom(128 * 1024)
+    # (data, address) = client.recvfrom(512)
+    # data = data[ThreadBase.header_size:-ThreadBase.checksum_size]
+    # print("data: " + thread_base.bytes_to_str(data))
 
+    if 0 != 0:
         if data == "NOT FOUND".encode('ascii') or \
             data == "UNKNOWN PROVIDER".encode('ascii') or \
                         data == "WRONG FORMAT".encode('ascii'):
@@ -89,3 +86,30 @@ if __name__ == '__main__':
             (address_len,) = s.unpack(data[data_pos:])
             address = data[data_pos + 1:data_pos + 1 + address_len].decode('ascii')
             print("\taddress_len=" + str(address_len) + " address=" + str(address))
+
+
+if __name__ == '__main__':
+    id = None
+    username = None
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hp:l:", ["help"])
+    except getopt.GetoptError as err:
+        print(str(err))
+        usage()
+        sys.exit(2)
+    for o, a in opts:
+        if o in ("-h", "--help"):
+            usage()
+            sys.exit()
+        elif o in ("-p", "--ping"):
+            id = int(a)
+        elif o in ("-l", "--lookup"):
+            username = a
+        else:
+            assert False, "unhandled option"
+
+    settings = Settings.load_config()
+    if id:
+        send_ping(settings, id)
+    if username:
+        send_lookup(settings, username)

@@ -13,10 +13,10 @@ class TestsMessagesRegAndUpdate(unittest.TestCase):
     def setUp(self):
         self.settings = Settings.load_config('../conf.json')
         self.core = Core(self.settings)
-        self.core.run(False)
+        self.core.run_web_server()
         sleep(5)
 
-        self.test_client_id = "1234567890"
+        self.test_client_id = "1234567000"
         self.test_client_username = "test_client"
         self.test_client_key = "".join([random.choice(string.digits) for i in range(16)])
 

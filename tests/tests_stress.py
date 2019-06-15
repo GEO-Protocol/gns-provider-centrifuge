@@ -3,51 +3,77 @@ import unittest
 import requests
 import random
 import string
-from time import sleep
+import time
 
 from core.core import Core
 from core.settings import Settings
+import client
 
 
 class TestsMessagesRegAndUpdate(unittest.TestCase):
     def setUp(self):
         self.settings = Settings.load_config('../conf.json')
         self.core = Core(self.settings)
-        self.core.run(False)
-        sleep(5)
+        self.core.run_threads()
+        time.sleep(0.5)
 
-        self.test_client_id = "1234567890"
-        self.test_client_username = "test_client"
-        self.test_client_key = "".join([random.choice(string.digits) for i in range(16)])
+        self.test_clients_count = 100
+        self.test_clients_start_id = 1234567000
+        self.test_clients = []
+        print("Creating "+str(self.test_clients_count)+" test clients...")
+        for i in range(self.test_clients_count):
+            test_client = self.__TestClient(self.core.client_manager, self.test_clients_start_id+i)
+            self.test_clients.append(test_client)
+            test_client.create()
 
     def tearDown(self):
-        self.__delete_test_client()
+        print("Deleting "+str(self.test_clients_count)+" test clients...")
+        for test_client in self.test_clients:
+            test_client.delete()
         self.core.terminate()
 
     def test_ping(self):
-        self.__delete_test_client()
-        r = requests.post(
-            "http://127.0.0.1:"+str(self.settings.api_port)+"/api/v1/users/",
-            data={
-                'id': self.test_client_id,
-                'username': self.test_client_username,
-                'key': self.test_client_key
-            }
-        )
-        if r.json()["status"] != "success":
-            assert False, r.json()["msg"]
+        start_time = time.time()
 
-        print("Success: '" + str(r.json()) + "'")
+        for test_client in self.test_clients:
+            client.send_ping(self.settings, test_client.test_client_id)
+            time.sleep(0.005)
 
-    def __create_test_client(self):
-        self.__delete_test_client()
-        client = self.core.client_manager.create(
-            self.test_client_id,
-            self.test_client_username)
-        self.core.client_manager.save(client)
+        hours, rem = divmod(time.time() - start_time, 3600)
+        minutes, seconds = divmod(rem, 60)
+        print("Finished in {:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
 
-    def __delete_test_client(self):
-        client = self.core.client_manager.find_by_id(self.test_client_id)
-        if not client:
-            return
-        self.core.client_manager.delete(client)
+    def test_lookup(self):
+        for test_client in self.test_clients:
+            client.send_ping(self.settings, test_client.test_client_id, False)
+            time.sleep(0.005)
+
+        start_time = time.time()
+
+        for test_client in self.test_clients:
+            client.send_lookup(self.settings, test_client.test_client_username)
+            time.sleep(0.005)
+
+        hours, rem = divmod(time.time() - start_time, 3600)
+        minutes, seconds = divmod(rem, 60)
+        print("Finished in {:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
+
+    class __TestClient:
+        def __init__(self, client_manager, id):
+            self._client_manager = client_manager
+            self.test_client_id = id
+            self.test_client_username = "test_client_"+str(id)
+            self.test_client_key = "".join([random.choice(string.digits) for i in range(16)])
+
+        def create(self):
+            self.delete()
+            client = self._client_manager.create(
+                self.test_client_id,
+                self.test_client_username)
+            self._client_manager.save(client)
+
+        def delete(self):
+            client = self._client_manager.find_by_id(self.test_client_id)
+            if not client:
+                return
+            self._client_manager.delete(client)
