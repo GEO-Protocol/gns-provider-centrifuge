@@ -1,4 +1,6 @@
 import json
+import subprocess
+import redis
 
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -9,17 +11,24 @@ from core.service.client.json import Manager as ClientManager
 from core.settings import Settings
 
 
+global_settings = None
 global_client_manager = None
 
 
-def get_client_manager(request):
+def get_settings():
+    global global_settings
+    if not global_settings:
+        global_settings = Settings.load_config()
+    return global_settings
+
+
+def get_client_manager():
     # client_manager = request.session.get('client_manager')
     # request.session['client_manager'] = client_manager
 
     global global_client_manager
     if not global_client_manager:
-        settings = Settings.load_config()
-        global_client_manager = ClientManager(settings)
+        global_client_manager = ClientManager(get_settings())
     return global_client_manager
 
 
@@ -88,7 +97,7 @@ def user_register(request):
         })
 
     try:
-        client_manager = get_client_manager(request)
+        client_manager = get_client_manager()
         client = client_manager.find_by_id(int(client_id))
         if client:
             assert False, "Client '"+str(client_id)+"' already registered"
@@ -126,7 +135,7 @@ def user_update_crypto_key(request, client_id):
         })
 
     try:
-        client_manager = get_client_manager(request)
+        client_manager = get_client_manager()
         client = client_manager.find_by_id(int(client_id))
         if not client:
             assert False, "Client '"+str(client_id)+"' is not found"
@@ -143,16 +152,33 @@ def user_update_crypto_key(request, client_id):
         })
 
 
+def load_cluster_info():
+    output = subprocess.check_output(['redis-cli', 'CLUSTER', 'INFO'])
+    output = output.decode('UTF-8')
+    output = output.split("\n")
+    cluster_info = {}
+    for line in output:
+        name_val = line.split(":")
+        if len(name_val) < 2:
+            continue
+        name_val[1] = name_val[1][:-1]
+        cluster_info[name_val[0]] = name_val[1]
+    # cluster_info["cluster_state"] = "ok"
+    return cluster_info
+
+
 def provider_health_check(request):
+    cluster_info = load_cluster_info()
+    cluster_state = cluster_info.get("cluster_state", None)
+    if not cluster_state or cluster_state != "ok":
+        return JsonResponse({
+            "state": "non-operational"
+        })
 
     return JsonResponse({
-        "state": "non-operational"
+        "state": "operational"
     })
 
     return JsonResponse({
         "state": "degraded"
-    })
-
-    return JsonResponse({
-        "state": "operational"
     })
