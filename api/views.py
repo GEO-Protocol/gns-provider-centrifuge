@@ -30,16 +30,30 @@ def home_page(request):
         "USAGE:\n"
         "  - User registration:\n"
         "\tPOST /api/v1/users/\n"
-        "\t{\n"
+        "\tParameters {\n"
         "\t\t'id': [int, required],\n"
         "\t\t'username': [string, required],\n"
         "\t\t'key': [string, required, hex-string crypto key].\n"
         "\t}\n"
+        "\tReturns {\n"
+        "\t\t'status': [string, success | error].\n"
+        "\t\t'msg': [string, error or success message].\n"
+        "\t}\n"
         "\t\n"
         "  - Crypto key update for existing user:\n"
         "\tPATCH /api/v1/users/:id/\n"
-        "\t{\n"
+        "\tParameters {\n"
         "\t\t'key': [string, required, hex-string crypto key].\n"
+        "\t}\n"
+        "\tReturns {\n"
+        "\t\t'status': [string, success | error].\n"
+        "\t\t'msg': [string, error or success message].\n"
+        "\t}\n"
+        "\t\n"
+        "  - Health Check:\n"
+        "\tGET /api/v1/status/\n"
+        "\tReturns {\n"
+        "\t\t'state': [string, operational | degraded | non-operational].\n"
         "\t}\n"
         "\t\n"
         "</pre>"
@@ -127,3 +141,18 @@ def user_update_crypto_key(request, client_id):
             "status": "error",
             "msg": str(e)
         })
+
+
+def provider_health_check(request):
+
+    return JsonResponse({
+        "state": "non-operational"
+    })
+
+    return JsonResponse({
+        "state": "degraded"
+    })
+
+    return JsonResponse({
+        "state": "operational"
+    })
