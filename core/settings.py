@@ -18,6 +18,27 @@ class RedisSettings:
             assert self.port != 0
 
 
+class PostgresSettings:
+    def __init__(self, **params_json):
+        self.host = params_json['host']
+        self.port = params_json['port']
+        self.database = params_json['database']
+        self.user = params_json['user']
+        self.password = params_json['password']
+
+        if ASSERTS:
+            assert type(self.host) is str
+            assert len(self.host) != 0
+            assert type(self.port) is int
+            assert self.port != 0
+            assert type(self.database) is str
+            assert len(self.database) != 0
+            assert type(self.user) is str
+            assert len(self.user) != 0
+            assert type(self.password) is str
+            assert len(self.password) != 0
+
+
 class Settings:
     def __init__(self, **params_json):
         self.host = params_json['host']
@@ -30,6 +51,7 @@ class Settings:
         self.database_name = params_json['database_name']
         self.debug = params_json['debug']
         self.asserts = params_json['asserts']
+        self.postgres = PostgresSettings(**params_json['postgres'])
         self.redis = RedisSettings(**params_json['redis'])
         self.use_centrifuge = params_json['use_centrifuge']
 

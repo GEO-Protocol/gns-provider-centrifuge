@@ -1,4 +1,5 @@
 redis
+psycopg2
 pycrypto
 netstruct
 requests

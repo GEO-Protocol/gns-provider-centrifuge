@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.http import QueryDict
 from django.views.decorators.csrf import csrf_exempt
 
-from core.service.client.json import Manager as ClientManager
+from core.service.client.postgres import Manager as ClientManager
 from core.settings import Settings
 
 

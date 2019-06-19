@@ -3,7 +3,7 @@ import logging
 import subprocess
 
 from core.model.context import Context
-from core.service.client.json import Manager as ClientManager
+from core.service.client.postgres import Manager as ClientManager
 from core.thread.lookup import Lookup
 from core.thread.ping import Ping
 
