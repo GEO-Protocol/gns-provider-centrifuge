@@ -38,7 +38,8 @@ class Manager:
         self._redis().set(self.key_name(client), dump, ex=self.expiration_time_in_seconds)
 
     def key_name(self, client):
-        return self._settings.provider_name + "_" + str(client.id)
+        # self._settings.provider_name + "_" +
+        return str(client.id)
 
     def delete(self, client):
         self._redis().delete(self.key_name(client))

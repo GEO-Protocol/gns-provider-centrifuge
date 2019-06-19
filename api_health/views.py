@@ -42,7 +42,7 @@ def provider_health_check(request):
 
     health_check.providers()
 
-    cluster_info = Check.load_cluster_info()
+    cluster_info = health_check.load_cluster_info()
     cluster_state = cluster_info.get("cluster_state", None)
     if not cluster_state or cluster_state != "ok":
         return JsonResponse({

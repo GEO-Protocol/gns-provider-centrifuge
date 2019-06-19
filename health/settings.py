@@ -5,12 +5,26 @@ DEBUG = True
 ASSERTS = True
 
 
+class RedisSettings:
+    def __init__(self, **params_json):
+        self.host = params_json['host']
+        self.port = params_json['port']
+        self.db = params_json['db']
+
+        if ASSERTS:
+            assert type(self.host) is str
+            assert len(self.host) != 0
+            assert type(self.port) is int
+            assert self.port != 0
+
+
 class Settings:
     def __init__(self, **params_yaml):
         self.api_host = params_yaml['api_host']
         self.api_port = params_yaml['api_port']
         self.debug = params_yaml['debug']
         self.asserts = params_yaml['asserts']
+        self.redis = RedisSettings(**params_yaml['redis'])
 
         self.providers = params_yaml['providers']
 

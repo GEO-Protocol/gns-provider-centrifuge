@@ -34,9 +34,12 @@ class Check:
         for provider_address in self._settings.providers:
             print("provider_address="+provider_address)
 
-    @staticmethod
-    def load_cluster_info():
-        output = subprocess.check_output(['redis-cli', 'CLUSTER', 'INFO'])
+    def load_cluster_info(self):
+        output = subprocess.check_output([
+            'redis-cli',
+            '-h', str(self._settings.redis.host),
+            '-p', str(self._settings.redis.port),
+            'CLUSTER', 'INFO'])
         output = output.decode('UTF-8')
         output = output.split("\n")
         cluster_info = {}
@@ -44,6 +47,7 @@ class Check:
             name_val = line.split(":")
             if len(name_val) < 2:
                 continue
+            print("line="+str(line))
             name_val[1] = name_val[1][:-1]
             cluster_info[name_val[0]] = name_val[1]
         # cluster_info["cluster_state"] = "ok"
