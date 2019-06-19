@@ -150,35 +150,3 @@ def user_update_crypto_key(request, client_id):
             "status": "error",
             "msg": str(e)
         })
-
-
-def load_cluster_info():
-    output = subprocess.check_output(['redis-cli', 'CLUSTER', 'INFO'])
-    output = output.decode('UTF-8')
-    output = output.split("\n")
-    cluster_info = {}
-    for line in output:
-        name_val = line.split(":")
-        if len(name_val) < 2:
-            continue
-        name_val[1] = name_val[1][:-1]
-        cluster_info[name_val[0]] = name_val[1]
-    # cluster_info["cluster_state"] = "ok"
-    return cluster_info
-
-
-def provider_health_check(request):
-    cluster_info = load_cluster_info()
-    cluster_state = cluster_info.get("cluster_state", None)
-    if not cluster_state or cluster_state != "ok":
-        return JsonResponse({
-            "state": "non-operational"
-        })
-
-    return JsonResponse({
-        "state": "operational"
-    })
-
-    return JsonResponse({
-        "state": "degraded"
-    })

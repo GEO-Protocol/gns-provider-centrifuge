@@ -1,0 +1,9 @@
+asserts: true
+debug: true
+api_host: "0.0.0.0"
+api_port: 2014
+
+providers: [
+  '127.0.0.1:2012',
+  '127.0.0.1:2013'
+]

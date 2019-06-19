@@ -6,11 +6,14 @@ from core.settings import Settings
 from core.thread.lookup import Lookup
 from core.thread.ping import Ping
 
+from health.settings import Settings as HealthSettings
+from health import Check
+
 
 def usage():
     print("Usage:")
     print("\tpython server.py [-v] [-m mode]")
-    print("\t\t [-m --mode] : ping, lookup, rest, all")
+    print("\t\t [-m --mode] : ping, lookup, rest, all, health")
     print("Example:")
     print("\tpython server.py ")
 
@@ -35,12 +38,17 @@ if __name__ == '__main__':
         else:
             assert False, "unhandled option"
 
-    settings = Settings.load_config()
-    core = Core(settings)
-
     if not mode:
-        core.run()
+        mode = "all"
+
+    if mode == "health":
+        health_settings = HealthSettings.load_config()
+        health_check = Check(health_settings)
+        health_check.run()
+        health_check.wait()
     else:
+        settings = Settings.load_config()
+        core = Core(settings)
         if mode == "ping":
             core.run_ping()
         elif mode == "lookup":
@@ -51,5 +59,4 @@ if __name__ == '__main__':
             core.run()
         else:
             core.run()
-
-    core.wait()
+        core.wait()
