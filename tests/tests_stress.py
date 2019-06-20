@@ -10,7 +10,7 @@ from core.settings import Settings
 import client as client_pkg
 
 
-class TestsMessagesRegAndUpdate(unittest.TestCase):
+class TestsStress(unittest.TestCase):
     def setUp(self):
         self.settings = Settings.load_config('../conf.yaml')
         self.core = Core(self.settings)
