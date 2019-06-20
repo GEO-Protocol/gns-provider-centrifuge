@@ -4,13 +4,17 @@ import subprocess
 import socket
 import redis
 
-from health.settings import Settings
+from core.settings import Settings
+from core.service.client.postgres import Manager as ClientManager
+import client as client_pkg
 
 
 class Check:
     def __init__(self, settings: Settings):
         self._settings = settings
         self.__init_logging()
+
+        self.client_manager = ClientManager(self._settings)
 
         self._redis_pool = redis.ConnectionPool(
             host=settings.redis.host,
@@ -39,14 +43,44 @@ class Check:
         if self.django_process:
             self.django_process.wait()
 
-    def random_client_id(self):
-        random_key = self._redis().randomkey()
-        return random_key
+    def _random_client(self):
+        client = None
+        tries_count = 0
+        tries_max = 5
+        while True:
+            client_id = self._redis().randomkey()
+            try:
+                client_id = int(client_id)
+            except:
+                return None
+            print("Random redis key: "+str(client_id))
+            client = self.client_manager.find_by_id(client_id)
+            if not client and tries_count < tries_max:
+                tries_count += 1
+                continue
+            return client
 
-    def providers(self, client_id):
-        for provider_address in self._settings.providers:
-            print("provider_address="+provider_address)
-        return 100
+    def providers(self):
+        client = self._random_client()
+        if not client:
+            return 0
+        print("Picked random client: " + str(client.id) + " : " + client.username)
+        providers_checked = 0
+        for provider_address in self._settings.instances:
+            host_and_port = provider_address.split(':')
+            print("Checking provider by address: "+host_and_port[0]+":"+host_and_port[1])
+            response = client_pkg.send_lookup(
+                self._settings.provider_name,
+                host_and_port[0], int(host_and_port[1]),
+                client.username, wait_seconds_for_response=1)
+            if response:
+                providers_checked += 1
+        print("providers_checked="+str(providers_checked))
+        print("len(self._settings.instances)="+str(len(self._settings.instances)))
+        percent = int(
+            (float(providers_checked) / float(len(self._settings.instances))) * 100
+        )
+        return percent
 
     def load_cluster_info(self):
         output = subprocess.check_output([
@@ -61,20 +95,10 @@ class Check:
             name_val = line.split(":")
             if len(name_val) < 2:
                 continue
-            print("line="+str(line))
             name_val[1] = name_val[1][:-1]
             cluster_info[name_val[0]] = name_val[1]
         # cluster_info["cluster_state"] = "ok"
         return cluster_info
-
-    @staticmethod
-    def get_binding_port():
-        try:
-            conn_str = str(socket.gethostbyname(socket.gethostname()) + "----" + sys.argv[-1])
-            conn_arr = conn_str.split(":")
-            return int(conn_arr[len(conn_arr) - 1])
-        except:
-            return 0
 
     def __init_logging(self) -> None:
         stream_handler = logging.StreamHandler()
@@ -96,3 +120,12 @@ class Check:
             self.logger.setLevel(logging.DEBUG)
         else:
             self.logger.setLevel(logging.INFO)
+
+    @staticmethod
+    def get_binding_port():
+        try:
+            conn_str = str(socket.gethostbyname(socket.gethostname()) + "----" + sys.argv[-1])
+            conn_arr = conn_str.split(":")
+            return int(conn_arr[len(conn_arr) - 1])
+        except:
+            return 0

@@ -1,5 +1,6 @@
 import getopt
 import socket
+import select
 import struct
 import sys
 import time
@@ -23,7 +24,7 @@ class ThreadBase(Base):
         pass
 
 
-def send_ping(settings, id, verbose=True):
+def send_ping(host, port, id, verbose=True):
     thread_base = ThreadBase(None)
 
     time_updated = int(round(time.time() * 1000))
@@ -36,17 +37,17 @@ def send_ping(settings, id, verbose=True):
     data = thread_base.pack_message(data)
 
     client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    client.sendto(data, (settings.ping_host, settings.ping_port))
+    client.sendto(data, (host, port))
     client.close()
 
     # (data, address) = client.recvfrom(512)
     # print("\treceived message: '" + data.decode('ascii') + "'")
 
 
-def send_lookup(settings, username, verbose=True):
+def send_lookup(provider_name, host, port, username, verbose=True, wait_seconds_for_response=0):
     thread_base = ThreadBase(None)
 
-    username = username + '@' + settings.provider_name
+    username = username + '@' + provider_name
     username_len = len(username)
     if verbose:
         print("username_len="+str(username_len)+" username="+str(username))
@@ -57,12 +58,20 @@ def send_lookup(settings, username, verbose=True):
     data = thread_base.pack_message(data)
 
     client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    client.sendto(data, (settings.host, settings.port))
-    client.close()
+    client.sendto(data, (host, port))
 
-    # (data, address) = client.recvfrom(512)
-    # data = data[ThreadBase.header_size:-ThreadBase.checksum_size]
-    # print("data: " + thread_base.bytes_to_str(data))
+    if wait_seconds_for_response > 0:
+        client.setblocking(0)
+        ready = select.select([client], [], [], wait_seconds_for_response)
+        if ready[0]:
+            (data, address) = client.recvfrom(512)
+            data = data[ThreadBase.header_size:-ThreadBase.checksum_size]
+            print("data: " + thread_base.bytes_to_str(data))
+            client.close()
+            return data
+
+    client.close()
+    return None
 
     if 0 != 0:
         if data == "NOT FOUND".encode('ascii') or \
@@ -110,6 +119,6 @@ if __name__ == '__main__':
 
     settings = Settings.load_config()
     if id:
-        send_ping(settings, id)
+        send_ping(settings.ping_host, settings.ping_port, id)
     if username:
-        send_lookup(settings, username)
+        send_lookup(settings.provider_name, settings.host, settings.port, username)

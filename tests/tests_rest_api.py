@@ -11,7 +11,7 @@ from core.settings import Settings
 
 class TestsMessagesRegAndUpdate(unittest.TestCase):
     def setUp(self):
-        self.settings = Settings.load_config('../conf.json')
+        self.settings = Settings.load_config('../conf.yaml')
         self.core = Core(self.settings)
         self.core.run_web_server()
         sleep(5)

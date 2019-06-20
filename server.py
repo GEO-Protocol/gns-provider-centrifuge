@@ -5,8 +5,6 @@ from core.core import Core
 from core.settings import Settings
 from core.thread.lookup import Lookup
 from core.thread.ping import Ping
-
-from health.settings import Settings as HealthSettings
 from health import Check
 
 
@@ -41,13 +39,12 @@ if __name__ == '__main__':
     if not mode:
         mode = "all"
 
+    settings = Settings.load_config()
     if mode == "health":
-        health_settings = HealthSettings.load_config()
-        health_check = Check(health_settings)
+        health_check = Check(settings)
         health_check.run()
         health_check.wait()
     else:
-        settings = Settings.load_config()
         core = Core(settings)
         if mode == "ping":
             core.run_ping()

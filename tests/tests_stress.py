@@ -7,12 +7,12 @@ import time
 
 from core.core import Core
 from core.settings import Settings
-import client
+import client as client_pkg
 
 
 class TestsMessagesRegAndUpdate(unittest.TestCase):
     def setUp(self):
-        self.settings = Settings.load_config('../conf.json')
+        self.settings = Settings.load_config('../conf.yaml')
         self.core = Core(self.settings)
         self.core.run_threads()
         time.sleep(0.5)
@@ -36,7 +36,7 @@ class TestsMessagesRegAndUpdate(unittest.TestCase):
         start_time = time.time()
 
         for test_client in self.test_clients:
-            client.send_ping(self.settings, test_client.test_client_id)
+            client_pkg.send_ping(self.settings.ping_host, self.settings.ping_port, test_client.test_client_id)
             time.sleep(0.005)
 
         hours, rem = divmod(time.time() - start_time, 3600)
@@ -45,13 +45,14 @@ class TestsMessagesRegAndUpdate(unittest.TestCase):
 
     def test_lookup(self):
         for test_client in self.test_clients:
-            client.send_ping(self.settings, test_client.test_client_id, False)
+            client_pkg.send_ping(self.settings.ping_host, self.settings.ping_port, test_client.test_client_id, False)
             time.sleep(0.005)
 
         start_time = time.time()
 
         for test_client in self.test_clients:
-            client.send_lookup(self.settings, test_client.test_client_username)
+            client_pkg.send_lookup(
+                self.settings.provider_name, self.settings.host, self.settings.port,test_client.test_client_username)
             time.sleep(0.005)
 
         hours, rem = divmod(time.time() - start_time, 3600)

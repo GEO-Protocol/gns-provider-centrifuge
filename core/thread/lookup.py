@@ -18,7 +18,7 @@ class Lookup(Base):
         pass
 
     def run(self):
-        self.context.logger.info("LookupController started")
+        self.context.logger.info("LookupController started at port: " + str(self.port))
         # It is necessary to init socket in the same process, that would use it,
         # to prevent data races.
         self.socket = socket.socket(
