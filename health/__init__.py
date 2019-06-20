@@ -2,6 +2,7 @@ import os,sys
 import logging
 import subprocess
 import socket
+import redis
 
 from health.settings import Settings
 
@@ -11,7 +12,15 @@ class Check:
         self._settings = settings
         self.__init_logging()
 
+        self._redis_pool = redis.ConnectionPool(
+            host=settings.redis.host,
+            port=settings.redis.port,
+            db=settings.redis.db)
+
         self.django_process = None
+
+    def _redis(self):
+        return redis.Redis(connection_pool=self._redis_pool)
 
     def run(self):
         self.run_web_server()
@@ -30,9 +39,14 @@ class Check:
         if self.django_process:
             self.django_process.wait()
 
-    def providers(self):
+    def random_client_id(self):
+        random_key = self._redis().randomkey()
+        return random_key
+
+    def providers(self, client_id):
         for provider_address in self._settings.providers:
             print("provider_address="+provider_address)
+        return 100
 
     def load_cluster_info(self):
         output = subprocess.check_output([

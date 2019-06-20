@@ -17,18 +17,13 @@ global_client_manager = None
 
 def get_settings():
     global global_settings
-    if not global_settings:
-        global_settings = Settings.load_config()
+    if not global_settings: global_settings = Settings.load_config()
     return global_settings
 
 
 def get_client_manager():
-    # client_manager = request.session.get('client_manager')
-    # request.session['client_manager'] = client_manager
-
     global global_client_manager
-    if not global_client_manager:
-        global_client_manager = ClientManager(get_settings())
+    if not global_client_manager: global_client_manager = ClientManager(get_settings())
     return global_client_manager
 
 
