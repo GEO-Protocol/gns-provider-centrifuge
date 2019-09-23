@@ -4,3 +4,4 @@ pycrypto
 netstruct
 requests
 django>=2.2.2
+pyyaml
