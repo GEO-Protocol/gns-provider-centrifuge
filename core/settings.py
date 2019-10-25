@@ -48,6 +48,7 @@ class Settings:
         self.api_host = params_yaml['api_host']
         self.api_port = params_yaml['api_port']
         self.provider_name = params_yaml['provider_name']
+        self.gns_address_separator = params_yaml['gns_address_separator']
         self.postgres = PostgresSettings(**params_yaml['postgres'])
         self.redis = RedisSettings(**params_yaml['redis'])
         self.instances = params_yaml['instances']

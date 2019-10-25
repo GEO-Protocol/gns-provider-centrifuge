@@ -44,10 +44,10 @@ def send_ping(host, port, id, verbose=True):
     # print("\treceived message: '" + data.decode('ascii') + "'")
 
 
-def send_lookup(provider_name, host, port, username, verbose=True, wait_seconds_for_response=0):
+def send_lookup(provider_name, host, port, username, gns_separator, verbose=True, wait_seconds_for_response=0):
     thread_base = ThreadBase(None)
 
-    username = username + '@' + provider_name
+    username = username + gns_separator + provider_name
     username_len = len(username)
     if verbose:
         print("username_len="+str(username_len)+" username="+str(username))
@@ -121,4 +121,4 @@ if __name__ == '__main__':
     if id:
         send_ping(settings.ping_host, settings.ping_port, id)
     if username:
-        send_lookup(settings.provider_name, settings.host, settings.port, username)
+        send_lookup(settings.provider_name, settings.host, settings.port, username, settings.gns_address_separator)

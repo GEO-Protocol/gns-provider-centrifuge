@@ -15,6 +15,7 @@ api_port: 2012
 
 # Name of our provider:
 provider_name: "geo.pay"
+gns_address_separator: "#"
 
 # PostgreSQL database connection parameters:
 postgres: {

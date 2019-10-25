@@ -43,7 +43,7 @@ class Lookup(Base):
 
             user_address = data[3:3+username_len].decode('ascii')
             try:
-                (username, provider) = user_address.split('@')
+                (username, provider) = user_address.split(self.context.settings.gns_address_separator)
             except:
                 self.send_error("WRONG FORMAT".encode('ascii'), address)
                 continue

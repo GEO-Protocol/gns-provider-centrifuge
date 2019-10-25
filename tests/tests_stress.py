@@ -52,7 +52,8 @@ class TestsStress(unittest.TestCase):
 
         for test_client in self.test_clients:
             client_pkg.send_lookup(
-                self.settings.provider_name, self.settings.host, self.settings.port,test_client.test_client_username)
+                self.settings.provider_name, self.settings.host, self.settings.port,test_client.test_client_username,
+                    self.settings.gns_address_separator)
             time.sleep(0.005)
 
         hours, rem = divmod(time.time() - start_time, 3600)

@@ -72,7 +72,7 @@ class Check:
             response = client_pkg.send_lookup(
                 self._settings.provider_name,
                 host_and_port[0], int(host_and_port[1]),
-                client.username, wait_seconds_for_response=1)
+                client.username, self._settings.gns_address_separator, wait_seconds_for_response=1)
             if response:
                 providers_checked += 1
         print("providers_checked="+str(providers_checked))
