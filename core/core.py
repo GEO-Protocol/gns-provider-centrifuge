@@ -1,9 +1,12 @@
+import os,sys
 import logging
+import subprocess
 
-from core.centrifuge.centrifuge import Centrifuge
-from core.clients.handler import ClientsHandler
-from core.communicator.communicator import Communicator
-from core.flow.processor import RequestsFlow
+from core.model.context import Context
+from core.service.client.postgres import Manager as ClientManager
+from core.thread.lookup import Lookup
+from core.thread.ping import Ping
+
 from core.settings import Settings
 
 
@@ -11,21 +14,79 @@ class Core:
     def __init__(self, settings: Settings):
         self._settings = settings
         self.__init_logging()
-        self.__init_communicator()
-        self.__init_clients_handler()
-        self.__init_messages_processor()
 
-        if self._settings.use_centrifuge:
-            self.__init_centrifuge()
+        self.client_manager = ClientManager(self._settings)
+        self.context = Context(
+            self._settings,
+            self.client_manager,
+            self.logger
+        )
+
+        self.ping_controller = None
+        self.lookup_controller = None
+
+        self.ping_process = None
+        self.lookup_process = None
+        self.django_process = None
+
+        # self.pool = multiprocessing.Pool()
+        # self.ctx = multiprocessing.get_context("spawn")  # Use process spawning instead of fork
+        # self.pool = self.ctx.Pool()
 
     def run(self):
-        logging.info("Operations processing started")
+        self.run_threads()
+        self.run_web_server()
 
-        if self._settings.use_centrifuge:
-            self._centrifuge.run_async()
+    def run_threads(self):
+        root_path = os.path.dirname(os.path.dirname(os.path.abspath(sys.modules[Settings.__module__].__file__)))
+        self.ping_process = subprocess.Popen([
+            "python", "-u",
+            "server.py",
+            "-m",
+            "ping"
+        ], bufsize=0, cwd=root_path)
 
-        while True:
-            self.__process_received_requests()
+        root_path = os.path.dirname(os.path.dirname(os.path.abspath(sys.modules[Settings.__module__].__file__)))
+        self.lookup_process = subprocess.Popen([
+            "python", "-u",
+            "server.py",
+            "-m",
+            "lookup"
+        ], bufsize=0, cwd=root_path)
+
+    def run_web_server(self):
+        logging.info("WebServer started")
+        root_path = os.path.dirname(os.path.dirname(os.path.abspath(sys.modules[Settings.__module__].__file__)))
+        self.django_process = subprocess.Popen([
+            "python", "-u",
+            "manage.py",
+            "runserver",
+            str(self._settings.api_host) + ":" + str(self._settings.api_port)
+        ], bufsize=0, cwd=root_path)
+
+    def run_ping(self):
+        self.ping_controller = Ping(self.context)
+        self.ping_controller.run()
+
+    def run_lookup(self):
+        self.lookup_controller = Lookup(self.context)
+        self.lookup_controller.run()
+
+    def wait(self):
+        if self.ping_process:
+            self.ping_process.wait()
+        if self.lookup_process:
+            self.lookup_process.wait()
+        if self.django_process:
+            self.django_process.wait()
+
+    def terminate(self):
+        if self.ping_process:
+            self.ping_process.terminate()
+        if self.lookup_process:
+            self.lookup_process.terminate()
+        if self.django_process:
+            self.django_process.terminate()
 
     def __init_logging(self) -> None:
         stream_handler = logging.StreamHandler()
@@ -47,26 +108,3 @@ class Core:
             self.logger.setLevel(logging.DEBUG)
         else:
             self.logger.setLevel(logging.INFO)
-
-    def __init_communicator(self) -> None:
-        self._communicator = Communicator(self._settings)
-
-    def __init_clients_handler(self) -> None:
-        self._clients_handler = ClientsHandler(self._settings)
-
-    def __init_messages_processor(self) -> None:
-        self._requests_flow = RequestsFlow(self._clients_handler)
-
-    def __init_centrifuge(self) -> None:
-        self._centrifuge = Centrifuge(self._settings)
-
-    def __process_received_requests(self) -> None:
-        """
-        Processes requests from clients and sends responses to them (if present).
-        """
-
-        for request in self._communicator.get_received_requests():
-            for processing_response in self._requests_flow.process(request):
-                self._communicator.send(
-                    processing_response.encrypted_response,
-                    processing_response.endpoint)

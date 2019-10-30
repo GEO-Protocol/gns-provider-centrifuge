@@ -1,0 +1,27 @@
+{
+    "clients": {
+        "3": {
+            "id": 3,
+            "username": "second",
+            "secret": null,
+            "time_created": 1559833613.0094466
+        },
+        "1": {
+            "id": 1,
+            "username": "minyor",
+            "secret": null,
+            "time_created": 1559833613.0094466
+        },
+        "2": {
+            "id": 2,
+            "username": "first",
+            "secret": null,
+            "time_created": 1559833613.0094466
+        }
+    },
+    "user_names": {
+        "first": 2,
+        "second": 3,
+        "minyor": 1
+    }
+}

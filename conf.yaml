@@ -1,0 +1,41 @@
+asserts: true
+debug: true
+
+# Lookup connection parameters:
+host: "127.0.0.1"
+port: 2011
+
+# Ping connection parameters:
+ping_host: "127.0.0.1"
+ping_port: 2010
+
+# Web server connection parameters:
+api_host: "0.0.0.0"
+api_port: 2012
+
+# Name of our provider:
+provider_name: "geo.pay"
+gns_address_separator: "#"
+
+# PostgreSQL database connection parameters:
+postgres: {
+  host: "localhost",
+  port: 5432,
+  database: "provider_db",
+  user: "provider_user",
+  password: "37i5b6h2zw1Xde"
+}
+
+# Redis db connection parameters:
+redis: {
+  host: '127.0.0.1',
+  port: 6379,
+  db: 0
+}
+
+# For Health Check only
+# List of provider instance's Lookup urls:
+instances: [
+  '127.0.0.1:2011',
+  '127.0.0.1:2111'
+]

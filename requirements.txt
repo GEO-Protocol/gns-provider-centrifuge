@@ -1,4 +1,7 @@
 redis
+psycopg2
 pycrypto
-msgpack
 netstruct
+requests
+django>=2.2.2
+pyyaml
