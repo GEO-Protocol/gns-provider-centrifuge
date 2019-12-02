@@ -66,9 +66,12 @@ def send_lookup(provider_name, host, port, username, gns_separator, verbose=True
         if ready[0]:
             (data, address) = client.recvfrom(512)
             data = data[ThreadBase.header_size:-ThreadBase.checksum_size]
-            print("data: " + thread_base.bytes_to_str(data))
+
+            address = data[7 + 3 + username_len : ].decode('ascii')
+
+            #print("data: " + thread_base.bytes_to_str(data))
             client.close()
-            return data
+            return address
 
     client.close()
     return None

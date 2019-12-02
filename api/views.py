@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from core.service.client.postgres import Manager as ClientManager
 from core.settings import Settings
+import client as client_pkg
 
 
 global_settings = None
@@ -52,6 +53,14 @@ def home_page(request):
         "\tReturns {\n"
         "\t\t'status': [string, success | error].\n"
         "\t\t'msg': [string, error or success message].\n"
+        "\t}\n"
+        "\t\n"
+        "  - Lookup http api:\n"
+        "\tGET /api/v1/lookup/:username/:provider_name/\n"
+        "\tReturns {\n"
+        "\t\t'status': [string, success | error].\n"
+        "\t\t'msg': [string, error or success message].\n"
+        "\t\t'address': [string, address returned fron loopup operation].\n"
         "\t}\n"
         "\t\n"
         "  - Health Check:\n"
@@ -145,3 +154,38 @@ def user_update_crypto_key(request, client_id):
             "status": "error",
             "msg": str(e)
         })
+
+
+def ping_operation(request, client_id):
+    if request.method != 'GET':
+        return JsonResponse({
+            "status": "error",
+            "msg": "GET method is required"
+        })
+    client_pkg.send_ping(get_settings().ping_host, get_settings().ping_port, client_id)
+    return JsonResponse({
+        "status": "success",
+        "msg": "Ping has been sent."
+    })
+
+
+def lookup_operation(request, username, provider_name):
+    if request.method != 'GET':
+        return JsonResponse({
+            "status": "error",
+            "msg": "GET method is required"
+        })
+    result = client_pkg.send_lookup(
+        provider_name, get_settings().host, get_settings().port, username, get_settings().gns_address_separator,
+        True, 1)
+    if result != None:
+        return JsonResponse({
+            "status": "success",
+            "msg": "Lookup operation is successful",
+            "address": result
+        })
+    return JsonResponse({
+        "status": "error",
+        "msg": "Lookup operation is failed. No such client."
+    })
+
