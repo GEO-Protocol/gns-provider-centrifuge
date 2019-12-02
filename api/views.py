@@ -177,7 +177,7 @@ def lookup_operation(request, username, provider_name):
         })
     result = client_pkg.send_lookup(
         provider_name, get_settings().host, get_settings().port, username, get_settings().gns_address_separator,
-        True, 1)
+        True, 5)
     if result != None:
         return JsonResponse({
             "status": "success",
