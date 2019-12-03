@@ -6,13 +6,24 @@ from core.settings import Settings
 
 class Manager:
     expiration_time_in_seconds = 60 * 30  # 30 minutes
+    redis_query_cnt_max = 100
 
     def __init__(self, settings: Settings):
         self._settings = settings
+        self._redis_pool = None
+        self._redis_query_cnt = self.redis_query_cnt_max
+        self._reconnect_redis()
+
+    def _reconnect_redis(self):
+        if self._redis_query_cnt < self.redis_query_cnt_max:
+            return
+        self._redis_query_cnt = 0
+        if self._redis_pool != None:
+            self._redis_pool.disconnect()
         self._redis_pool = redis.ConnectionPool(
-            host=settings.redis.host,
-            port=settings.redis.port,
-            db=settings.redis.db)
+            host=self._settings.redis.host,
+            port=self._settings.redis.port,
+            db=self._settings.redis.db)
 
     def _redis(self):
         return redis.Redis(connection_pool=self._redis_pool)
@@ -23,6 +34,7 @@ class Manager:
             self.save(client)
             return client
         client.address = json.loads(dump.decode("utf-8"))
+        self._reconnect_redis()
         return client
 
     def save(self, client):
@@ -36,6 +48,7 @@ class Manager:
         # pipe.execute()
 
         self._redis().set(self.key_name(client), dump, ex=self.expiration_time_in_seconds)
+        self._reconnect_redis()
 
     def key_name(self, client):
         # self._settings.provider_name + "_" +
