@@ -59,8 +59,9 @@ class Lookup(Base):
                     self.send_error("NO ADDRESS YET".encode('ascii'), address)
                     continue
 
-                self.context.logger.info(
-                    "Lookup received:" + " username='" + username + "'" + " provider='" + provider + "'")
+                if self.context.settings.debug:
+                    self.context.logger.info(
+                        "Lookup received:" + " username='" + username + "'" + " provider='" + provider + "'")
 
                 # Hard-coding, for now
                 protocol_version = 0

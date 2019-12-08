@@ -70,8 +70,8 @@ class TestsStress(unittest.TestCase):
                 address = client_pkg.send_lookup(
                     self.settings.provider_name, self.settings.host, self.settings.port,test_client.test_client_username,
                         self.settings.gns_address_separator, True, 5)
-                #if address == None:
-                #    assert False, "Lookup failed"
+                if address == None:
+                    assert False, "Lookup failed"
                 time.sleep(0.001)
 
     class __TestClient:

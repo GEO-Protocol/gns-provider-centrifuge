@@ -43,8 +43,9 @@ class Ping(Base):
             client = self.context.client_manager.find_by_id(id)
             if client:
                 if not client.time_updated or int(client.time_updated) < int(time_updated):
-                    self.context.logger.info(
-                        "Ping received:"+" id="+str(id)+" address="+str(address)+" time_updated="+str(time_updated))
+                    if self.context.settings.debug:
+                        self.context.logger.info(
+                            "Ping received:"+" id="+str(id)+" address="+str(address)+" time_updated="+str(time_updated))
                     client.address = address
                     client.time_updated = time_updated
                     self.context.client_manager.save(client, True)
