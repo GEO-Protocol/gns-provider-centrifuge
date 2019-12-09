@@ -55,6 +55,7 @@ class Settings:
 
         self.debug = params_yaml['debug']
         self.asserts = params_yaml['asserts']
+        self.logger = None
 
         if ASSERTS:
             assert type(self.host) is str

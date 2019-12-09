@@ -47,7 +47,11 @@ class Manager:
         # pipe = self._redis().pipeline()
         # pipe.execute()
 
-        self._redis().set(self.key_name(client), dump, ex=self.expiration_time_in_seconds)
+        status = self._redis().set(self.key_name(client), dump, ex=self.expiration_time_in_seconds)
+        if status != True:
+            self._settings.logger.error(
+                "Cannot save client '" + client.username + "' address '" + client.address + "' to redis.")
+
         self._reconnect_redis()
 
     def key_name(self, client):

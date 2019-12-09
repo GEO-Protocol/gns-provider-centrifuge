@@ -1,5 +1,5 @@
 asserts: true
-debug: false
+debug: true
 
 # Lookup connection parameters:
 host: "127.0.0.1"

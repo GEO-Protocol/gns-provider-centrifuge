@@ -9,3 +9,4 @@ class Context:
         self.settings = settings
         self.client_manager = client_manager
         self.logger = logger
+        self.settings.logger = self.logger
