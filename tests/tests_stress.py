@@ -18,7 +18,7 @@ class TestsStress(unittest.TestCase):
         self.core.run_threads()
         time.sleep(0.5)
 
-        self.test_clients_count = 300
+        self.test_clients_count = 3000
         self.test_clients_start_id = 1234567000
         self.test_clients = []
         print("Creating "+str(self.test_clients_count)+" test clients...")

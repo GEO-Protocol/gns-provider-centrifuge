@@ -15,6 +15,9 @@ class Lookup(Base):
 
     def send_error(self, data, address):
         # self.send_message(data, address)
+        if self.context.settings.debug:
+            self.context.logger.info(
+                "Lookup failed: " + str(data.decode('ascii')))
         pass
 
     def run(self):
