@@ -5,11 +5,16 @@ from core.settings import Settings
 
 
 class Manager:
-    expiration_time_in_seconds = 60 * 30  # 30 minutes
     redis_query_cnt_max = 100
 
     def __init__(self, settings: Settings):
         self._settings = settings
+
+        self.expiration_time_in_seconds = 60 * 30  # 30 minutes
+        if self._settings.redis.expiration_time_in_minutes > 0:
+            self.expiration_time_in_seconds = 60 * self._settings.redis.expiration_time_in_minutes
+        print("self.expiration_time_in_seconds="+str(self.expiration_time_in_seconds))
+
         self._redis_pool = None
         self._redis_query_cnt = self.redis_query_cnt_max
         self._reconnect_redis()

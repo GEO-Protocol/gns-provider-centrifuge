@@ -30,7 +30,8 @@ postgres: {
 redis: {
   host: '127.0.0.1',
   port: 6379,
-  db: 0
+  db: 0,
+  expiration_time_in_minutes: 30
 }
 
 # For Health Check only

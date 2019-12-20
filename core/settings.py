@@ -10,12 +10,14 @@ class RedisSettings:
         self.host = params_json['host']
         self.port = params_json['port']
         self.db = params_json['db']
+        self.expiration_time_in_minutes = params_json['expiration_time_in_minutes']
 
         if ASSERTS:
             assert type(self.host) is str
             assert len(self.host) != 0
             assert type(self.port) is int
             assert self.port != 0
+            assert type(self.expiration_time_in_minutes) is int
 
 
 class PostgresSettings:
