@@ -44,6 +44,10 @@ def send_ping(host, port, id, verbose=True):
     # print("\treceived message: '" + data.decode('ascii') + "'")
 
 
+def debug(str):
+    if Settings.is_in_debug():
+        print(str)
+
 def send_lookup(provider_name, host, port, username, gns_separator, verbose=True, wait_seconds_for_response=0):
     thread_base = ThreadBase(None)
 
@@ -61,6 +65,7 @@ def send_lookup(provider_name, host, port, username, gns_separator, verbose=True
     client.sendto(data, (host, port))
 
     if wait_seconds_for_response > 0:
+        debug("[Client] Trying to read lookup response (timeout="+str(wait_seconds_for_response)+") from socket... ")
         client.setblocking(0)
         ready = select.select([client], [], [], wait_seconds_for_response)
         if ready[0]:
@@ -69,9 +74,11 @@ def send_lookup(provider_name, host, port, username, gns_separator, verbose=True
 
             address = data[7 + 3 + username_len : ].decode('ascii')
 
+            debug("[Client] Socket timeout. No response from provider... ")
             #print("data: " + thread_base.bytes_to_str(data))
             client.close()
             return address
+        debug("[Client] Socket timeout. No response from provider... ")
 
     client.close()
     return None

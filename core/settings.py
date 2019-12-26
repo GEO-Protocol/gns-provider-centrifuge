@@ -96,3 +96,8 @@ class Settings:
                 ASSERTS = True
 
             return s
+
+    @staticmethod
+    def is_in_debug():
+        global DEBUG
+        return DEBUG

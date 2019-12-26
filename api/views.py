@@ -16,6 +16,11 @@ global_settings = None
 global_client_manager = None
 
 
+def debug(str):
+    if Settings.is_in_debug():
+        print(str)
+
+
 def get_settings():
     global global_settings
     if not global_settings: global_settings = Settings.load_config()
@@ -184,6 +189,7 @@ def lookup_operation(request, username, provider_name):
             "msg": "Lookup operation is successful",
             "address": result
         })
+    debug("Lookup operation is failed. No such client " + username + " : " + provider_name)
     return JsonResponse({
         "status": "error",
         "msg": "Lookup operation is failed. No such client."
