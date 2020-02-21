@@ -51,7 +51,7 @@ if __name__ == '__main__':
         elif mode == "lookup":
             core.run_lookup()
         elif mode == "rest":
-            core.run(False)
+            core.run_web_server()
         elif mode == "all":
             core.run()
         else:

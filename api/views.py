@@ -180,18 +180,35 @@ def lookup_operation(request, username, provider_name):
             "status": "error",
             "msg": "GET method is required"
         })
-    result = client_pkg.send_lookup(
-        provider_name, get_settings().host, get_settings().port, username, get_settings().gns_address_separator,
-        True, 5)
-    if result != None:
+
+    # Check if provider name matches our provider's name
+    if provider_name != get_settings().provider_name:
+        return JsonResponse({
+            "status": "error",
+            "msg": "Unknown provider"
+        })
+
+    client = get_client_manager().find_by_username(username)
+    if client:
+        if not client.address:
+            return JsonResponse({
+                "status": "error",
+                "msg": "No address yet"
+            })
+
+        debug("HTML Lookup received:" + " username='" + username + "'" + " provider='" + provider_name + "'")
+
+        # Packing client address: IP and PORT
+        client_address = client.address[0] + ":" + str(client.address[1])
+
         return JsonResponse({
             "status": "success",
             "msg": "Lookup operation is successful",
-            "address": result
+            "address": client_address
         })
-    debug("Lookup operation is failed. No such client " + username + " : " + provider_name)
-    return JsonResponse({
-        "status": "error",
-        "msg": "Lookup operation is failed. No such client."
-    })
+    else:
+        return JsonResponse({
+            "status": "error",
+            "msg": "Not found: " + username
+        })
 
