@@ -51,7 +51,8 @@ class Manager(interface.Manager):
     def check_for_connection(self):
         try:
             self._conn.execute('SELECT 1')
-        except psycopg2.OperationalError:
+        #except psycopg2.OperationalError:
+        except:
             self.connect()
 
     def find_by_id(self, id):
