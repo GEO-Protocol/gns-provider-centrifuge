@@ -29,10 +29,14 @@ class Manager(interface.Manager):
             self._conn.commit()
         except (Exception, psycopg2.DatabaseError) as error:
             self._conn = None
-            print(error)
+            self.debug(error)
 
         # client = self.create(1, "minyor")
         # self.save(client)
+
+    def debug(self, str):
+        if self.settings.is_in_debug():
+            self.settings.logger.debug(str)
 
     def connect(self):
         try:
@@ -46,14 +50,18 @@ class Manager(interface.Manager):
             self._cur = self._conn.cursor()
         except (Exception, psycopg2.DatabaseError) as error:
             self._conn = None
-            print(error)
+            self.debug(error)
 
     def check_for_connection(self):
-        try:
-            self._conn.execute('SELECT 1')
-        #except psycopg2.OperationalError:
-        except:
-            self.connect()
+        while True:
+            try:
+                self._cur.execute('SELECT 1')
+                break
+            #except psycopg2.OperationalError:
+            except Exception as error:
+                self.debug(error)
+                self.debug("Reestablishing connection to the database...")
+                self.connect()
 
     def find_by_id(self, id):
         self.check_for_connection();
@@ -75,6 +83,7 @@ class Manager(interface.Manager):
         if len(results) < 1:
             return None
         client = self._load_client(results)
+        self._cur.close()
         return self.redis.load(client)
 
     def create(self, id, username):

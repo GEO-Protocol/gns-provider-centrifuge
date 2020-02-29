@@ -13,7 +13,7 @@ class Manager:
         self.expiration_time_in_seconds = 60 * 30  # 30 minutes
         if self._settings.redis.expiration_time_in_minutes > 0:
             self.expiration_time_in_seconds = 60 * self._settings.redis.expiration_time_in_minutes
-        print("self.expiration_time_in_seconds="+str(self.expiration_time_in_seconds))
+        #print("self.expiration_time_in_seconds="+str(self.expiration_time_in_seconds))
 
         self._redis_pool = None
         self._redis_query_cnt = self.redis_query_cnt_max

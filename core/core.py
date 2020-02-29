@@ -108,3 +108,5 @@ class Core:
             self.logger.setLevel(logging.DEBUG)
         else:
             self.logger.setLevel(logging.INFO)
+
+        self._settings.logger = self.logger

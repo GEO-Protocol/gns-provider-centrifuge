@@ -9,16 +9,24 @@ from django.views.decorators.csrf import csrf_exempt
 
 from core.service.client.postgres import Manager as ClientManager
 from core.settings import Settings
+from core.core import Core
 import client as client_pkg
 
 
 global_settings = None
 global_client_manager = None
+global_core = None
 
 
 def debug(str):
     if Settings.is_in_debug():
-        print(str)
+        get_logger().debug(str)
+
+
+def get_core():
+    global global_core
+    if not global_core: global_core = Core(get_settings())
+    return global_core
 
 
 def get_settings():
@@ -28,9 +36,11 @@ def get_settings():
 
 
 def get_client_manager():
-    global global_client_manager
-    if not global_client_manager: global_client_manager = ClientManager(get_settings())
-    return global_client_manager
+    return get_core().client_manager
+
+def get_logger():
+    get_core()
+    return get_settings().logger
 
 
 def home_page(request):
