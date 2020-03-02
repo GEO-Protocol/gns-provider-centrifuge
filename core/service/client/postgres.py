@@ -17,7 +17,7 @@ class Manager(interface.Manager):
         self._cur = None
         self.connect()
         try:
-            self._cur.execute(
+            self.execute(
                 """
                 CREATE TABLE IF NOT EXISTS client (
                     id SERIAL PRIMARY KEY,
@@ -52,11 +52,10 @@ class Manager(interface.Manager):
             self._conn = None
             self.debug(error)
 
-    def check_for_connection(self):
+    def execute(self, query, params=None):
         while True:
             try:
-                self._cur.execute('SELECT 1')
-                break
+                return self._cur.execute(query, params)
             #except psycopg2.OperationalError:
             except Exception as error:
                 self.debug(error)
@@ -64,8 +63,7 @@ class Manager(interface.Manager):
                 self.connect()
 
     def find_by_id(self, id):
-        self.check_for_connection();
-        self._cur.execute(
+        self.execute(
             'SELECT * from client where id = %s', (str(id),)
         )
         results = self._cur.fetchall()
@@ -75,8 +73,7 @@ class Manager(interface.Manager):
         return self.redis.load(client)
 
     def find_by_username(self, username):
-        self.check_for_connection();
-        self._cur.execute(
+        self.execute(
             'SELECT * from client where username = %s', (username,)
         )
         results = self._cur.fetchall()
@@ -94,15 +91,14 @@ class Manager(interface.Manager):
         self.redis.save(client)
         if redis_only:
             return
-        self.check_for_connection();
         existing_client = self.find_by_id(client.id)
         if existing_client:
-            self._cur.execute(
+            self.execute(
                 "update client SET time_created=%s, secret=%s, username=%s where id=%s;",
                 (client.time_created, client.secret, client.username, client.id)
             )
         else:
-            self._cur.execute(
+            self.execute(
                 "insert into client (id, time_created, secret, username) values (%s, %s, %s, %s);",
                 (client.id, client.time_created, client.secret, client.username)
             )
@@ -112,8 +108,7 @@ class Manager(interface.Manager):
         self.redis.delete(client)
         if redis_only:
             return
-        self.check_for_connection();
-        self._cur.execute(
+        self.execute(
             "delete from client where id=%s;",
             (client.id,)
         )
