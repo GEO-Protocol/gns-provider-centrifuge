@@ -83,7 +83,6 @@ class Manager(interface.Manager):
         if len(results) < 1:
             return None
         client = self._load_client(results)
-        self._cur.close()
         return self.redis.load(client)
 
     def create(self, id, username):
