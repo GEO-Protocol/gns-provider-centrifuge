@@ -62,21 +62,26 @@ class Manager(interface.Manager):
                 self.debug("Reestablishing connection to the database...")
                 self.connect()
 
+    def fetchall(self, query, params=None):
+        while True:
+            try:
+                self._cur.execute(query, params)
+                return self._cur.fetchall()
+            #except psycopg2.OperationalError:
+            except Exception as error:
+                self.debug(error)
+                self.debug("Reestablishing connection to the database...")
+                self.connect()
+
     def find_by_id(self, id):
-        self.execute(
-            'SELECT * from client where id = %s', (str(id),)
-        )
-        results = self._cur.fetchall()
+        results = self.fetchall('SELECT * from client where id = %s', (str(id),))
         if len(results) < 1:
             return None
         client = self._load_client(results)
         return self.redis.load(client)
 
     def find_by_username(self, username):
-        self.execute(
-            'SELECT * from client where username = %s', (username,)
-        )
-        results = self._cur.fetchall()
+        results = self.fetchall('SELECT * from client where username = %s', (username,))
         if len(results) < 1:
             return None
         client = self._load_client(results)
