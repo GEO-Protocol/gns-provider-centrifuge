@@ -22,6 +22,9 @@ def debug(str):
     if Settings.is_in_debug():
         get_logger().debug(str)
 
+def error(str):
+    get_logger().error(str)
+
 
 def get_core():
     global global_core
@@ -193,6 +196,7 @@ def lookup_operation(request, username, provider_name):
 
     # Check if provider name matches our provider's name
     if provider_name != get_settings().provider_name:
+        error("HTML Lookup unknown provider " + provider_name)
         return JsonResponse({
             "status": "error",
             "msg": "Unknown provider"
@@ -201,6 +205,7 @@ def lookup_operation(request, username, provider_name):
     client = get_client_manager().find_by_username(username)
     if client:
         if not client.address:
+            error("HTML Lookup No address yet " + username)
             return JsonResponse({
                 "status": "error",
                 "msg": "No address yet"
@@ -217,6 +222,7 @@ def lookup_operation(request, username, provider_name):
             "address": client_address
         })
     else:
+        error("HTML Lookup Not found " + username)
         return JsonResponse({
             "status": "error",
             "msg": "Not found: " + username

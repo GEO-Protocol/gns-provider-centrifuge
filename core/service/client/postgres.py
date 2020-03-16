@@ -38,6 +38,9 @@ class Manager(interface.Manager):
         if self.settings.is_in_debug():
             self.settings.logger.debug(str)
 
+    def error(self, str) :
+        self.settings.logger.error(str)
+
     def connect(self):
         try:
             self._conn = psycopg2.connect(
@@ -53,28 +56,40 @@ class Manager(interface.Manager):
             self.debug(error)
 
     def execute(self, query, params=None):
+        cnt_attempts = 1
         while True:
             try:
                 return self._cur.execute(query, params)
             #except psycopg2.OperationalError:
             except Exception as error:
-                self.debug(error)
-                self.debug("Reestablishing connection to the database...")
+                cnt_attempts = cnt_attempts + 1
+                self.error("execute")
+                self.error(error)
+                if cnt_attempts > 3:
+                    return None
+                self.error("Reestablishing connection to the database...")
                 self.connect()
 
     def fetchall(self, query, params=None):
+        cnt_attempts = 1
         while True:
             try:
                 self._cur.execute(query, params)
                 return self._cur.fetchall()
             #except psycopg2.OperationalError:
             except Exception as error:
-                self.debug(error)
-                self.debug("Reestablishing connection to the database...")
+                cnt_attempts = cnt_attempts + 1
+                self.error("fetchall error")
+                self.error(error)
+                if cnt_attempts > 3:
+                    return None
+                self.error("Reestablishing connection to the database...")
                 self.connect()
 
     def find_by_id(self, id):
         results = self.fetchall('SELECT * from client where id = %s', (str(id),))
+        if not results:
+            return None
         if len(results) < 1:
             return None
         client = self._load_client(results)
@@ -82,6 +97,8 @@ class Manager(interface.Manager):
 
     def find_by_username(self, username):
         results = self.fetchall('SELECT * from client where username = %s', (username,))
+        if not results:
+            return None
         if len(results) < 1:
             return None
         client = self._load_client(results)
