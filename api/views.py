@@ -140,8 +140,36 @@ def user_register(request):
         })
 
 
+def user_status(request, client_id):
+    if request.method != 'GET':
+        return JsonResponse({
+            "status": "error",
+            "msg": "GET method is required"
+        })
+
+    try:
+        client_manager = get_client_manager()
+        client = client_manager.find_by_id(int(client_id))
+        if not client:
+            assert False, "Client '"+str(client_id)+"' is not found"
+        return JsonResponse({
+            "status": "success",
+            "username": client.username,
+            "time_created": str(client.time_created),
+            "msg": "User: '"+str(client_id)+"' status has been retrieved"
+        })
+    except Exception as e:
+        return JsonResponse({
+            "status": "error",
+            "msg": str(e)
+        }, status=405)
+
+
 @csrf_exempt
 def user_update_crypto_key(request, client_id):
+    if request.method == 'GET':
+        return user_status(request, client_id)
+
     if request.method != 'PATCH':
         return JsonResponse({
             "status": "error",
