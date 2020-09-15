@@ -97,7 +97,7 @@ def user_register(request):
         return JsonResponse({
             "status": "error",
             "msg": "POST method is required"
-        })
+        }, status=405)
 
     client_id = request.POST.get("id", None)
     username = request.POST.get("username", None)
@@ -106,17 +106,17 @@ def user_register(request):
         return JsonResponse({
             "status": "error",
             "msg": "'id' parameter is mandatory"
-        })
+        }, status=405)
     if not username:
         return JsonResponse({
             "status": "error",
             "msg": "'username' parameter is mandatory"
-        })
+        }, status=405)
     if not key:
         return JsonResponse({
             "status": "error",
             "msg": "'key' parameter is mandatory"
-        })
+        }, status=405)
 
     try:
         client_manager = get_client_manager()
@@ -137,7 +137,7 @@ def user_register(request):
         return JsonResponse({
             "status": "error",
             "msg": str(e)
-        })
+        }, status=405)
 
 
 def user_status(request, client_id):
@@ -145,7 +145,7 @@ def user_status(request, client_id):
         return JsonResponse({
             "status": "error",
             "msg": "GET method is required"
-        })
+        }, status=405)
 
     try:
         client_manager = get_client_manager()
@@ -174,7 +174,7 @@ def user_update_crypto_key(request, client_id):
         return JsonResponse({
             "status": "error",
             "msg": "PATCH method is required"
-        })
+        }, status=405)
 
     data = QueryDict(request.body)
     key = data.get("key", None)
@@ -182,7 +182,7 @@ def user_update_crypto_key(request, client_id):
         return JsonResponse({
             "status": "error",
             "msg": "'key' parameter is mandatory"
-        })
+        }, status=405)
 
     try:
         client_manager = get_client_manager()
@@ -199,7 +199,7 @@ def user_update_crypto_key(request, client_id):
         return JsonResponse({
             "status": "error",
             "msg": str(e)
-        })
+        }, status=405)
 
 
 def ping_operation(request, client_id):
@@ -207,7 +207,7 @@ def ping_operation(request, client_id):
         return JsonResponse({
             "status": "error",
             "msg": "GET method is required"
-        })
+        }, status=405)
     client_pkg.send_ping(get_settings().ping_host, get_settings().ping_port, client_id)
     return JsonResponse({
         "status": "success",
@@ -220,7 +220,7 @@ def lookup_operation(request, username, provider_name):
         return JsonResponse({
             "status": "error",
             "msg": "GET method is required"
-        })
+        }, status=405)
 
     # Check if provider name matches our provider's name
     if provider_name != get_settings().provider_name:
@@ -228,7 +228,7 @@ def lookup_operation(request, username, provider_name):
         return JsonResponse({
             "status": "error",
             "msg": "Unknown provider"
-        })
+        }, status=405)
 
     client = get_client_manager().find_by_username(username)
     if client:
@@ -237,7 +237,7 @@ def lookup_operation(request, username, provider_name):
             return JsonResponse({
                 "status": "error",
                 "msg": "No address yet"
-            })
+            }, status=405)
 
         debug("HTML Lookup received:" + " username='" + username + "'" + " provider='" + provider_name + "'")
 
@@ -254,5 +254,5 @@ def lookup_operation(request, username, provider_name):
         return JsonResponse({
             "status": "error",
             "msg": "Not found: " + username
-        })
+        }, status=405)
 
