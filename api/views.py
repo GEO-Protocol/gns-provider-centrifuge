@@ -99,6 +99,7 @@ def user_register(request):
             "msg": "POST method is required"
         }, status=405)
 
+    debug("user_register")
     client_id = request.POST.get("id", None)
     username = request.POST.get("username", None)
     key = request.POST.get("key", None)
@@ -118,6 +119,7 @@ def user_register(request):
             "msg": "'key' parameter is mandatory"
         }, status=405)
 
+    debug("user_register " + username)
     try:
         client_manager = get_client_manager()
         client = client_manager.find_by_id(int(client_id))
@@ -230,6 +232,7 @@ def lookup_operation(request, username, provider_name):
             "msg": "Unknown provider"
         }, status=405)
 
+    debug("lookup_operation " + username + " " + provider_name)
     client = get_client_manager().find_by_username(username)
     if client:
         if not client.address:
@@ -239,7 +242,8 @@ def lookup_operation(request, username, provider_name):
                 "msg": "No address yet"
             }, status=405)
 
-        debug("HTML Lookup received:" + " username='" + username + "'" + " provider='" + provider_name + "'")
+        debug("HTML Lookup received:" + " username='" + username + "'" + " provider='" + provider_name + "'" + " ip='" +
+              client.address[0] + "'" + " port='" + str(client.address[1]) + "'")
 
         # Packing client address: IP and PORT
         client_address = client.address[0] + ":" + str(client.address[1])

@@ -34,8 +34,12 @@ class Manager:
         return redis.Redis(connection_pool=self._redis_pool)
 
     def load(self, client):
+        # self._settings.logger.error("load id=" + str(client.id) + " username=" + client.username)
         dump = self._redis().get(self.key_name(client))
         if not dump:
+            self._settings.logger.error("load not dump id=" + str(client.id) + " username=" + client.username)
+            if client.address:
+                self._settings.logger.error("load not dump address=" + client.address)
             self.save(client)
             return client
         client.address = json.loads(dump.decode("utf-8"))

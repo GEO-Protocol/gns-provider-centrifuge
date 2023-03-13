@@ -96,12 +96,18 @@ class Manager(interface.Manager):
         return self.redis.load(client)
 
     def find_by_username(self, username):
+        # self.error("find_by_username " + username)
         results = self.fetchall('SELECT * from client where username = %s', (username,))
         if not results:
+            # self.error("find_by_username " + username + " not results")
             return None
         if len(results) < 1:
+            self.error("find_by_username " + username + " wrong results")
             return None
+        self.debug("find_by_username " + username + " results: " + ', '.join(map(str, results[0])))
         client = self._load_client(results)
+        if client.username != username:
+            return None
         return self.redis.load(client)
 
     def create(self, id, username):
